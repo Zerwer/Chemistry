@@ -57,7 +57,7 @@ def experimental_properties(data, experiment_property):
                 if y['TOCHeading'] == 'Experimental Properties':
                     for z in y['Section']:
                         if z['TOCHeading'] == experiment_property:
-                            return str(z)
+                            return z
     return ''
 
 # -?\d+(?:\.\d+)?\s*°\s*C

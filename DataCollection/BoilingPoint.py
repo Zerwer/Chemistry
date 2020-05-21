@@ -23,7 +23,8 @@ def attempt_boiling(molecule):
         json_data = json.loads(req.decode())
         bp = boiling_point(json_data)
         if bp:
-            save.write(molecule + ' ' + str(round(bp, 1)) + '\n')
+            return str(round(bp, 1))
+
     except Exception as e:
         if type(e) == KeyboardInterrupt:
             exit()
