@@ -1,54 +1,33 @@
-from PubChem import *
-import datetime
-import urllib
-import sys
-from rdkit.Chem.MolStandardize.rdMolStandardize import *
-from rdkit import RDLogger
+from PubChem import experimental_properties
+from Collect import collect
+import re
 
-RDLogger.DisableLog('rdApp.*')
 
-file = open('data/boiling_point/ia_data.txt', 'r')
+# Takes JSON data and finds boilings points and averages them
+def boiling_point(data):
+    boiling_data = experimental_properties(data, 'Boiling Point')
 
-save = open('better.txt', 'w')
+    bp = []
 
-start_time = time.time()
-current_date = datetime.datetime.now()
-print('-*- Start Time: ' + str(current_date))
+    # Finds each boiling point and uses different regular expression searches based on format
+    for line in boiling_data.split('\''):
+        if '°C' in line and line != '°C':
+            if re.search(r'>\d+', line) or re.search(r'<\d+', line):
+                pass
+            elif '±' in line:
+                bp.append(float(re.findall(r'\d+.?\d+±', line)[0][:-1]))
+            elif '@' in line or 'kPa' in line:
+                print(line)
+            elif re.search(r'[0-9]-[0-9]', line):
+                x = re.findall(r'\d+.?\d+-\d+.?\d+', line)[0].split('-')
+                bp.append((float(x[0])+float(x[1]))/2)
+            else:
+                bp.append(float(re.sub('[ °C]', '', re.findall(r'-?\d+(?:\.\d+)?\s*°\s*C', line)[0])))
 
-def attempt_boiling(molecule):
-    try:
-        pug_json = pug_smiles_json(molecule)
-        cid = get_cid(pug_json)
-        req = process_request(website_short + '/pug_view/data/compound/' + str(cid) + '/JSON')
-        json_data = json.loads(req.decode())
-        bp = boiling_point(json_data)
-        if bp:
-            return str(round(bp, 1))
+    if len(bp) == 0:
+        return None
+    else:
+        return sum(bp)/len(bp)
 
-    except Exception as e:
-        if type(e) == KeyboardInterrupt:
-            exit()
-        elif type(e) == urllib.error.URLError:
-            sys.stdout.write('\r')
-            sys.stdout.write('-*- Connection timed out')
-            sys.stdout.flush()
-            time.sleep(5)
-            attempt_boiling(molecule)
-
-lines = file.readlines()
-
-size = len(lines)
-
-for i, line in enumerate(lines):
-    attempt_boiling(line.split(' ')[0])
-
-    sys.stdout.write('\r')
-    sys.stdout.write("[%-20s] %d%%" % ('=' * int(20*((i+1))/size), 100*((i+1)/size)))
-    sys.stdout.write(' ' + str(i+1) + '/' + str(size))
-    sys.stdout.flush()
-
-time_taken = round(time.time() - start_time)
-minutes = str(round((time_taken - (time_taken % 60))/60))
-seconds = str(time_taken % 60)
-
-print('\n-*- Took ' + minutes + ' minutes ' + seconds + ' seconds')
+# Takes list of molecules and outputs the smiles and corresponding boiling point from boiling_point function
+collect('list.txt', 'bp.txt', boiling_point)

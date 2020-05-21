@@ -35,8 +35,6 @@ def api_get_data(cid, api_function):
             sys.stdout.flush()
             time.sleep(5)
             api_get_data(cid, api_function)
-        else:
-            print(e)
 
 
 # Function is called by function for specific data, removes redundant code
