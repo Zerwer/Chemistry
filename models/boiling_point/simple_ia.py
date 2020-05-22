@@ -1,6 +1,7 @@
 """
 Simple neural network sorter for five fingerprints
 Uncomment selected fingerprints append and set layers based on below
+Purpose was to determine best fingerprint for this application, Atom Pair worked best
 
 Morgan                  |   512, 16
 Daylight                |   513, 64
