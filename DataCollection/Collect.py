@@ -18,12 +18,7 @@ def api_get_data(cid, api_function):
         json_data = json.loads(req.decode())
         data = api_function(json_data)
 
-        # This must be true unless the wrong data is used and there is no associated value
-        if data:
-            return data
-        else:
-            print('Not valid molecule: ' + str(cid))
-            exit()
+        return data
 
     except Exception as e:
         if type(e) == KeyboardInterrupt:
@@ -62,7 +57,7 @@ def collect(molecules, save, api_function):
         # Save data in format: MOL1 DATA1
         #                      MOL2 DATA2
         # Smiles has \r that must be removed
-        if api_data:
+        if api_data is not None:
             save.write(split_line[1][:-1] + ' ' + str(api_data) + '\n')
 
         # Simple loading bar code
