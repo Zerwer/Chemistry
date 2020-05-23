@@ -1,5 +1,5 @@
-from PubChem import experimental_properties
-from Collect import collect
+from pubchem import experimental_properties
+from collect import collect
 import re
 
 

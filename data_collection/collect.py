@@ -3,7 +3,7 @@
 # CID (\t) SMILES
 import datetime, time, sys, json, urllib, urllib.error
 from rdkit import RDLogger
-from PubChem import process_request
+from pubchem import process_request
 
 # Stop garbage messages
 RDLogger.DisableLog('rdApp.*')
