@@ -14,7 +14,7 @@ from rdkit.Chem import AllChem
 from rdkit.Chem import MACCSkeys
 from rdkit.Chem import rdMolDescriptors
 
-data = open('data/OctanolWaterPartitionCoefficient/owpc_fixed.txt', 'r')
+data = open('data/OctanolWaterPartitionCoefficient/owpc2.txt', 'r')
 
 X = []
 Y = []
