@@ -1,7 +1,7 @@
 """
 Regression neural network to predict boiling point
 
-Requires a deeper network with more samples...
+Requires a deeper network with more samples to achieve any good results
 
 Atom Pair               |   1026, 128
 """
