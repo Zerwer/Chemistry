@@ -62,3 +62,8 @@ model = MLPRegressor(solver='adam', alpha=1e-5, hidden_layer_sizes=(1048, 128), 
 model.fit(X_train, y_train)
 
 print(model.score(X_test, y_test))
+
+save_model = open('run_models/melting_gse_model.pkl', 'wb')
+save_scaler = open('run_models/melting_gse_scaler.pkl', 'wb')
+pickle.dump(model, save_model)
+pickle.dump(scaler, save_scaler)
