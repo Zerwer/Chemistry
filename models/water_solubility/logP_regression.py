@@ -12,8 +12,8 @@ from sklearn.neighbors import KNeighborsRegressor
 
 data = open('data/water_solubility/aqsol.txt', 'r')
 
-logP_model = pickle.load(open('models/logP_model.pkl', 'rb'))
-logP_scaler = pickle.load(open('models/logP_scaler.pkl', 'rb'))
+logP_model = pickle.load(open('run_models/logP_model.pkl', 'rb'))
+logP_scaler = pickle.load(open('run_models/logP_scaler.pkl', 'rb'))
 
 X = []
 Y = []
