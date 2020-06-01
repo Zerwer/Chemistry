@@ -4,15 +4,15 @@ from sklearn import preprocessing
 import numpy as np
 import pickle
 from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors, Descriptors
-from models.common import models
+from rdkit.Chem import rdMolDescriptors
+from models.common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
 
 data = open('data/boiling_point/ia_data.txt', 'r')
 
-logP_model = models.init('logP')
-logP_solubility_model = models.init('logS_logP')
-atom_pair_sol_model = models.init('water_solubility')
-combined_model = models.init('combined_solubility')
+logP_model = LogP('logP')
+logP_solubility_model = LogPSolubility('logS_logP')
+atom_pair_sol_model = AtomPairSolubility('water_solubility')
+combined_model = CombinedSolubility('combined_solubility')
 
 X = []
 Y = []
@@ -23,10 +23,10 @@ for line in data.readlines():
     compound = Chem.MolFromSmiles(split[0])
     fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound)
 
-    logP = models.run_logP(logP_model, fingerprint)
-    logP_sol = models.run_logP_sol(logP_solubility_model, logP)
-    atom_pair_sol = models.run_atom_pair_solubility(atom_pair_sol_model, fingerprint)
-    combined_sol = models.run_combined_solubility(combined_model, compound, logP, logP_sol, atom_pair_sol)
+    logP = logP_model.run(fingerprint)
+    logP_sol = logP_solubility_model.run(logP)
+    atom_pair_sol = atom_pair_sol_model.run(fingerprint)
+    combined_sol = combined_model.run(compound, logP, logP_sol, atom_pair_sol)
 
     X.append([combined_sol, logP])
 
