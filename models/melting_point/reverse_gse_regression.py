@@ -10,7 +10,7 @@ import numpy as np
 import pickle
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
-from models.common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
+from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
 
 data = open('data/melting_point/mp.txt', 'r')
 
@@ -33,7 +33,7 @@ for line in data.readlines():
     compound = Chem.MolFromSmiles(split[0])
     fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound)
 
-    # Use models to predict logP and logS through different methods
+    # Use models to predict logP and logS
     logP = logP_model.run(fingerprint)
     logP_sol = logP_solubility_model.run(logP)
     atom_pair_sol = atom_pair_sol_model.run(fingerprint)

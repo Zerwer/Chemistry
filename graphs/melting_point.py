@@ -1,49 +1,38 @@
-import pickle
-import numpy as np
+"""
+Graphs the predicted versus actual melting point using the reverse gse model
+"""
 import matplotlib.pyplot as plt
 from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors, Descriptors
+from rdkit.Chem import rdMolDescriptors
+from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility, MeltingPoint
 
 data = open('data/melting_point/mp.txt', 'r')
 
-logP_model = pickle.load(open('run_models/logP_model.pkl', 'rb'))
-logP_scaler = pickle.load(open('run_models/logP_scaler.pkl', 'rb'))
-
-logP_solubility_model = pickle.load(open('run_models/logS_logP_model.pkl', 'rb'))
-logP_solubility_scaler = pickle.load(open('run_models/logS_logP_scaler.pkl', 'rb'))
-
-solubility_model = pickle.load(open('run_models/water_solubility_model.pkl', 'rb'))
-solubility_scaler = pickle.load(open('run_models/water_solubility_scaler.pkl', 'rb'))
-
-combined_model = pickle.load(open('run_models/combined_solubility_model.pkl', 'rb'))
-combined_scaler = pickle.load(open('run_models/combined_solubility_scaler.pkl', 'rb'))
-
-melting_point_model = pickle.load(open('run_models/melting_gse_model.pkl', 'rb'))
-melting_point_scaler = pickle.load(open('run_models/melting_gse_scaler.pkl', 'rb'))
+# Load necessary models
+logP_model = LogP('logP')
+logP_solubility_model = LogPSolubility('logS_logP')
+atom_pair_sol_model = AtomPairSolubility('water_solubility')
+combined_model = CombinedSolubility('combined_solubility')
+melting_model = MeltingPoint('melting_gse')
 
 x = []
 y = []
 
+# Read the molecule and corresponding melting point and split into X and Y
 for line in data.readlines():
     split = line.split(' ')
-    compound = Chem.MolFromSmiles(split[0])
 
+    # Generate RDKit molecule and Atom Pair fingerprint
+    compound = Chem.MolFromSmiles(split[0])
     fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound)
 
-    logP = logP_model.predict(logP_scaler.transform(np.asarray(fingerprint).reshape(1, -1)))[0]
+    # Use models to predict logP and logS
+    logP = logP_model.run(fingerprint)
+    logP_sol = logP_solubility_model.run(logP)
+    atom_pair_sol = atom_pair_sol_model.run(fingerprint)
+    combined_sol = combined_model.run(compound, logP, logP_sol, atom_pair_sol)
 
-    logP_sol = logP_solubility_model.predict(logP_solubility_scaler.transform(np.asarray(logP).reshape(1, -1)))[0]
-
-    sol = solubility_model.predict(solubility_scaler.transform(np.asarray(fingerprint).reshape(1, -1)))[0]
-
-    mw = Descriptors.ExactMolWt(compound)
-    rb = rdMolDescriptors.CalcNumRotatableBonds(compound)
-    ap = len(compound.GetSubstructMatches(Chem.MolFromSmarts('[a]'))) / compound.GetNumHeavyAtoms()
-    esol = 0.16 - 0.63 * logP - 0.0062 * mw + 0.066 * rb - 0.74 * ap
-
-    combined = combined_model.predict(combined_scaler.transform(np.asarray([logP_sol, sol, esol]).reshape(1, -1)))[0]
-
-    mp = melting_point_model.predict(melting_point_scaler.transform(np.asarray([combined, logP]).reshape(1, -1)))[0]
+    mp = melting_model.run(combined_sol, logP)
 
     x.append(float(mp))
     y.append(float(split[1][:-1]))

@@ -8,7 +8,7 @@ import numpy as np
 import pickle
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, Descriptors
-from models.common.chemical_models import AtomPairSolubility, LogP, LogPSolubility
+from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility
 
 data = open('data/water_solubility/aqsol.txt', 'r')
 

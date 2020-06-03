@@ -9,7 +9,7 @@ import numpy as np
 import pickle
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
-from models.common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
+from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
 
 data = open('data/boiling_point/ia_data.txt', 'r')
 
