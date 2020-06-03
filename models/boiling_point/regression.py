@@ -10,8 +10,6 @@ from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import AllChem
-from rdkit.Chem import MACCSkeys
 from rdkit.Chem import rdMolDescriptors
 
 data = open('data/boiling_point/bt.txt', 'r')
@@ -19,10 +17,12 @@ data = open('data/boiling_point/bt.txt', 'r')
 X = []
 Y = []
 
+# Read the molecule and corresponding boiling point and split into X and Y
 for line in data.readlines():
     split = line.split(' ')
-    X.append(rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
 
+    # Use Atom Pair fingerprint to represent the molecule
+    X.append(rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
     # Convert to kelvin
     Y.append(float(split[1][:-1])+273)
 
