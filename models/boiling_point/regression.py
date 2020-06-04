@@ -23,8 +23,7 @@ for line in data.readlines():
 
     # Use Atom Pair fingerprint to represent the molecule
     X.append(rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
-    # Convert to kelvin
-    Y.append(float(split[1][:-1])+273)
+    Y.append(float(split[1][:-1]))
 
 scaler = preprocessing.StandardScaler()
 X = scaler.fit_transform(np.asarray(X))

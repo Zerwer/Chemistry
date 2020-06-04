@@ -6,6 +6,7 @@ from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, Descriptors
 import numpy as np
 
+
 # All models inherit this as all the models are pickled
 class ChemicalModel:
     def __init__(self, name):
