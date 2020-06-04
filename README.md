@@ -1,6 +1,15 @@
 # Chemistry
 Neural networks for predicting chemical properties
 
+## Conda Setup
+
+```
+conda create -n Chemistry
+conda activate Chemistry
+conda install -c rdkit rdkit
+conda install scikit
+```
+
 ## Octanol-Water Partition Coefficient (logP)
 Data: 24652 compounds scraped from PubChem
 
