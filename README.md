@@ -7,7 +7,7 @@ Neural networks for predicting chemical properties
 conda create -n Chemistry
 conda activate Chemistry
 conda install -c rdkit rdkit
-conda install scikit
+conda install scikit-learn
 ```
 
 ## Octanol-Water Partition Coefficient (logP)
