@@ -8,7 +8,7 @@ import numpy as np
 import pickle
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
-from common.chemical_models import LogP
+from chemical_models import LogP
 
 data = open('data/water_solubility/aqsol.txt', 'r')
 
@@ -45,7 +45,7 @@ model.fit(X_train, y_train)
 print(model.score(X_test, y_test))
 
 # Save model and scaler
-save_model = open('models/logS_logP_model.pkl', 'wb')
-save_scaler = open('models/logS_logP_scaler.pkl', 'wb')
+save_model = open('run_models/logS_logP_model.pkl', 'wb')
+save_scaler = open('run_models/logS_logP_scaler.pkl', 'wb')
 pickle.dump(model, save_model)
 pickle.dump(scaler, save_scaler)

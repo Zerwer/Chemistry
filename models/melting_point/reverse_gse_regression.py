@@ -10,7 +10,7 @@ import numpy as np
 import pickle
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
-from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
+from chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
 
 data = open('data/melting_point/mp.txt', 'r')
 

@@ -39,7 +39,7 @@ model.fit(X_train, y_train)
 print(model.score(X_test, y_test))
 
 # Save model and scaler
-save_model = open('models/water_solubility_model.pkl', 'wb')
-save_scaler = open('models/water_solubility_scaler.pkl', 'wb')
+save_model = open('run_models/water_solubility_model.pkl', 'wb')
+save_scaler = open('run_models/water_solubility_scaler.pkl', 'wb')
 pickle.dump(model, save_model)
 pickle.dump(scaler, save_scaler)

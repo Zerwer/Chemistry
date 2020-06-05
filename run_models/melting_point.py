@@ -3,7 +3,7 @@
 import sys
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
-from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility, MeltingPoint
+from chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility, MeltingPoint
 
 # Load necessary models
 logP_model = LogP('logP')
