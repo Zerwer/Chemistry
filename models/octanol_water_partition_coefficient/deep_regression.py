@@ -4,18 +4,12 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 from sklearn import preprocessing
-from keras import backend as K
+from keras.optimizers import SGD
 
 data = open('data/OctanolWaterPartitionCoefficient/owpc_fixed.txt', 'r')
 
 X = []
 Y = []
-
-
-def coeff_determination(y_true, y_pred):
-    SS_res = K.sum(K.square(y_true-y_pred))
-    SS_tot = K.sum(K.square( y_true - K.mean(y_true) ) )
-    return ( 1 - SS_res/(SS_tot + K.epsilon()) )
 
 # Read the molecule and corresponding logP and split into X and Y
 for line in data.readlines():
@@ -33,11 +27,14 @@ Y = np.asarray(Y)
 model = Sequential([
     Dense(1026, input_dim=2048,activation='relu'),
     Dropout(0.5),
+    Dense(512, activation='relu'),
     Dense(128, activation='relu'),
     Dropout(0.5),
     Dense(1, activation='linear')
 ])
 
-model.compile(optimizer='adam', loss='mean_squared_error', metrics=[coeff_determination])
+model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mean_squared_error'])
 
 model.fit(X, Y, validation_split=0.1, shuffle=True, batch_size=500, epochs=100)
+
+print(model.evaluate(X, Y))
