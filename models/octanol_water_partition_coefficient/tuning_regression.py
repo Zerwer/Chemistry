@@ -1,5 +1,5 @@
 from sklearn.neural_network import MLPRegressor
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn import preprocessing
 import numpy as np
 from rdkit import Chem
@@ -32,8 +32,8 @@ param_grid = {'solver': ['adam', 'SGD'],
 # Create the model
 model = MLPRegressor(hidden_layer_sizes=(1026, 128,), verbose=1)
 
-# Using Grid Search and Cross Validation find best parameters
-search = GridSearchCV(model, param_grid=param_grid, cv=5)
+# Using Grid Search and Cross Validation find best parameters, use all available cores
+search = GridSearchCV(model, param_grid=param_grid, cv=5, n_jobs=-1)
 search.fit(X, y)
 
 # Print the best parameters
