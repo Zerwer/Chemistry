@@ -1,0 +1,40 @@
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn import preprocessing
+import numpy as np
+from rdkit import Chem
+from rdkit.Chem import rdMolDescriptors
+
+data = open('data/OctanolWaterPartitionCoefficient/owpc_fixed.txt', 'r')
+
+X = []
+y = []
+
+# Read the molecule and corresponding logP and split into X and Y
+for line in data.readlines():
+    split = line.split(' ')
+
+    # Use Atom Pair fingerprint to represent the molecule
+    X.append(rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
+    y.append(float(split[1][:-1]))
+
+# Scale data for better accuracy
+scaler = preprocessing.StandardScaler()
+X = scaler.fit_transform(np.asarray(X))
+y = np.asarray(y)
+
+# Grid search for optimal hyper-parameters
+param_grid = {'solver': ['adam', 'SGD'],
+              'alpha': 10.0 ** -np.arange(1, 7),
+              'max_iter': range(50, 100),
+              'batch_size': [100, 250, 500]}
+
+# Create the model
+model = MLPRegressor(hidden_layer_sizes=(1026, 128,), verbose=1)
+
+# Using Grid Search and Cross Validation find best parameters
+search = GridSearchCV(model, param_grid=param_grid, cv=5)
+search.fit(X, y)
+
+# Print the best parameters
+print(search.best_params_)

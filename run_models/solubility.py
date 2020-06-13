@@ -27,6 +27,7 @@ rb = rdMolDescriptors.CalcNumRotatableBonds(compound)
 ap = len(compound.GetSubstructMatches(Chem.MolFromSmarts('[a]'))) / compound.GetNumHeavyAtoms()
 esol = 0.16 - 0.63 * logP - 0.0062 * mw + 0.066 * rb - 0.74 * ap
 
+
 # Converts solubility in logS to g/L or mg/mL
 def logs_conversion(logS):
     return (10.0**float(logS)) * float(Descriptors.ExactMolWt(Chem.MolFromSmiles(sys.argv[1])))
