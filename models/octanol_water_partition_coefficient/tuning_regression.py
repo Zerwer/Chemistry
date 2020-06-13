@@ -24,7 +24,7 @@ X = scaler.fit_transform(np.asarray(X))
 y = np.asarray(y)
 
 # Grid search for optimal hyper-parameters
-param_grid = {'solver': ['adam', 'SGD'],
+param_grid = {'solver': ['adam', 'sgd'],
               'alpha': 10.0 ** -np.arange(1, 7),
               'max_iter': range(50, 100),
               'batch_size': [100, 250, 500]}
