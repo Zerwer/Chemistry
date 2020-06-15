@@ -24,13 +24,12 @@ X = scaler.fit_transform(np.asarray(X))
 y = np.asarray(y)
 
 # Grid search for optimal hyper-parameters
-param_grid = {'solver': ['adam', 'sgd'],
-              'alpha': 10.0 ** -np.arange(1, 7),
-              'max_iter': [50, 60, 70, 80, 90, 100],
-              'batch_size': [100, 250, 500]}
+param_grid = {'alpha': 10.0 ** -np.arange(1, 7),
+              'max_iter': [50, 100, 150],
+              'batch_size': [500, 3000, 6000]}
 
 # Create the model
-model = MLPRegressor(hidden_layer_sizes=(1026, 128,), verbose=1)
+model = MLPRegressor(solver='adam', hidden_layer_sizes=(1026, 128,), verbose=1)
 
 # Using Grid Search and Cross Validation find best parameters, use all available cores
 search = GridSearchCV(model, param_grid=param_grid, cv=5, n_jobs=-1)
