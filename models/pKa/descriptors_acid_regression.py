@@ -8,7 +8,7 @@ from rdkit.Chem import rdMolDescriptors, Lipinski, MACCSkeys
 from chemical_models import AcidpKa
 from rdkit.Avalon.pyAvalonTools import GetAvalonFP
 
-data = open('data/pKa/formated_acidic.txt', 'r')
+data = open('data/pKa/formatted_acidic.txt', 'r')
 
 # Load necessary models
 acid_model = AcidpKa('pKa_acid')

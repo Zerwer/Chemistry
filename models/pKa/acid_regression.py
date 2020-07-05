@@ -9,7 +9,7 @@ from rdkit.Chem import MACCSkeys
 from rdkit.Chem import AllChem
 from rdkit.Avalon.pyAvalonTools import GetAvalonFP
 
-data = open('data/pKa/formated_acidic.txt', 'r')
+data = open('data/pKa/formatted_acidic.txt', 'r')
 
 X = []
 y = []
