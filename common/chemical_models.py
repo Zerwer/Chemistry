@@ -38,6 +38,12 @@ class MeltingPoint(ChemicalModel):
         return self.model.predict(self.scaler.transform(np.asarray([sol, logP]).reshape(1, -1)))[0]
 
 
+class AcidpKa(ChemicalModel):
+
+    def run(self, fingerprint):
+        return self.model.predict(self.scaler.transform(np.asarray(fingerprint).reshape(1, -1)))[0]
+
+
 class CombinedSolubility(ChemicalModel):
 
     def run(self, mol, logP, logP_sol, atom_pair_sol):
