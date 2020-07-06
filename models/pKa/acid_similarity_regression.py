@@ -1,19 +1,11 @@
 import numpy as np
+import pickle
 from rdkit import Chem, DataStructs
 from rdkit.Chem import rdMolDescriptors, Lipinski
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn import preprocessing
-
-
-def five_closest(mol, acid_set):
-    mol_fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(mol))
-    similarity = []
-    for acid in acid_set:
-        sim = DataStructs.DiceSimilarity(mol_fp, acid[2])
-        similarity.append([sim, acid[1]])
-
-    return np.asarray(sorted(similarity)[:5]).flatten()
+from chemical_models import pka_similarities
 
 acid_data = open('data/pKa/formatted_acidic.txt', 'r')
 acids = []
@@ -29,7 +21,7 @@ X = []
 y = []
 
 for acid in test:
-    X.append(five_closest(acid[0], acids))
+    X.append(pka_similarities(acid[0], acids, 512))
     y.append(acid[1])
 
 scaler = preprocessing.StandardScaler()
@@ -41,9 +33,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 model = MLPRegressor(solver='adam',
                      alpha=0.0001,
-                     hidden_layer_sizes=(256, 128,),
+                     hidden_layer_sizes=(512, 128,),
                      random_state=1,
                      verbose=1,
                      max_iter=1000)
 model.fit(X, y)
 print(model.score(X_test, y_test))
+
+# Save model and scaler
+save_model = open('run_models/acid_sim_model.pkl', 'wb')
+save_scaler = open('run_models/acid_sim_scaler.pkl', 'wb')
+pickle.dump(model, save_model)
+pickle.dump(scaler, save_scaler)
