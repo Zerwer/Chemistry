@@ -5,13 +5,21 @@ import numpy as np
 import pickle
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, Lipinski, MACCSkeys
-from chemical_models import AcidpKa
+from chemical_models import AcidpKa, AcidSimilarity
 from rdkit.Avalon.pyAvalonTools import GetAvalonFP
 
 data = open('data/pKa/formatted_acidic.txt', 'r')
 
+acids = []
+
+for line in data.readlines():
+    split = line.split(' ')
+    acids.append([split[0], float(split[1][:-1]),
+                  rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0]))])
+
 # Load necessary models
 acid_model = AcidpKa('pKa_acid')
+sim_model = AcidSimilarity('acid_sim')
 
 X = []
 Y = []
@@ -23,8 +31,9 @@ for line in data.readlines():
 
     pKa = acid_model.run(GetAvalonFP(compound)+MACCSkeys.GenMACCSKeys(compound) +
                          rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound))
+    sim_pKa = sim_model.run(split[0], acids)
 
-    X.append([pKa, Lipinski.NumHDonors(compound), Lipinski.NumHAcceptors(compound), Lipinski.NHOHCount(compound)])
+    X.append([pKa, sim_pKa, Lipinski.NumHDonors(compound), Lipinski.NumHAcceptors(compound), Lipinski.NHOHCount(compound)])
 
     Y.append(float(split[1][:-1]))
 

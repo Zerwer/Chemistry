@@ -12,16 +12,17 @@ acids = []
 
 for line in acid_data.readlines():
     split = line.split(' ')
-    acids.append([split[0], float(split[1][:-1]), rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0]))])
+    acids.append([split[0], float(split[1][:-1]),
+                  rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0]))])
 
 # Split data into training and test set
-train, test = train_test_split(acids, test_size=0.25, random_state=1)
+train, test = train_test_split(acids, test_size=0.5, random_state=1)
 
 X = []
 y = []
 
 for acid in test:
-    X.append(pka_similarities(acid[0], acids, 512))
+    X.append(pka_similarities(acid[0], train, 512))
     y.append(acid[1])
 
 scaler = preprocessing.StandardScaler()
@@ -37,7 +38,7 @@ model = MLPRegressor(solver='adam',
                      random_state=1,
                      verbose=1,
                      max_iter=1000)
-model.fit(X, y)
+model.fit(X_train, y_train)
 print(model.score(X_test, y_test))
 
 # Save model and scaler
