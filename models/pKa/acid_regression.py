@@ -1,12 +1,14 @@
+"""
+Predicts acid pKa by combining three fingerprints, avalon, maacs, and atom pair
+"""
 from sklearn.neural_network import MLPRegressor
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import numpy as np
 import pickle
 from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors, Lipinski
+from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem import MACCSkeys
-from rdkit.Chem import AllChem
 from rdkit.Avalon.pyAvalonTools import GetAvalonFP
 
 data = open('data/pKa/formatted_acidic.txt', 'r')
@@ -18,11 +20,9 @@ y = []
 for line in data.readlines():
     split = line.split(' ')
 
-    # Use Atom Pair fingerprint to represent the molecule
+    # Combine avalon, maacs, atom pair fingerprints
     X.append(GetAvalonFP(Chem.MolFromSmiles(split[0]))+MACCSkeys.GenMACCSKeys(Chem.MolFromSmiles(split[0])) +
              rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
-    #X.append(MACCSkeys.GenMACCSKeys(Chem.MolFromSmiles(split[0])))
-    #X.append(rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
     y.append(float(split[1][:-1]))
 
 # Scale data for better accuracy

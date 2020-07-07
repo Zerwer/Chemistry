@@ -1,28 +1,37 @@
+"""
+pKa regression that uses similar molecules with known pKa values as input
+Either works very well for some molecules if similar ones are known and very poorly for others when they are not
+Due to lack of data and the majority of the split going to reference the accuracy is artificially low
+"""
 import numpy as np
 import pickle
-from rdkit import Chem, DataStructs
-from rdkit.Chem import rdMolDescriptors, Lipinski
+from rdkit import Chem
+from rdkit.Chem import rdMolDescriptors
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn import preprocessing
-from chemical_models import pka_similarities
+from functions import pka_similarities
 
 acid_data = open('data/pKa/formatted_acidic.txt', 'r')
 acids = []
 
+# Read acids from data and store SMILES, pKa, fingerprint
 for line in acid_data.readlines():
     split = line.split(' ')
+    # Atom pair fingerprint used to determine similarity
     acids.append([split[0], float(split[1][:-1]),
                   rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0]))])
 
-# Split data into training and test set
-train, test = train_test_split(acids, test_size=0.5, random_state=1)
+# Split data into reference set that will be used to get similarity and
+# test set which will be used to train and validate the model
+reference, test = train_test_split(acids, test_size=0.5, random_state=1)
 
 X = []
 y = []
 
+# X is 512 of the most similar molecules see common.functions.pka_similarities
 for acid in test:
-    X.append(pka_similarities(acid[0], train, 512))
+    X.append(pka_similarities(acid[0], reference, 512))
     y.append(acid[1])
 
 scaler = preprocessing.StandardScaler()

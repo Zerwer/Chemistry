@@ -1,8 +1,10 @@
+"""
+Predict pKa of acids from descriptors and combination of fingerprint and similarity predictors
+"""
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import numpy as np
-import pickle
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, Lipinski, MACCSkeys
 from chemical_models import AcidpKa, AcidSimilarity
@@ -12,6 +14,7 @@ data = open('data/pKa/formatted_acidic.txt', 'r')
 
 acids = []
 
+# Read molecules and add to acids for prediction reference
 for line in data.readlines():
     split = line.split(' ')
     acids.append([split[0], float(split[1][:-1]),
@@ -24,6 +27,7 @@ sim_model = AcidSimilarity('acid_sim')
 X = []
 Y = []
 
+# For x combine predictions and descriptors, for y append actual pKa
 for line in data.readlines():
     split = line.split(' ')
 
@@ -51,9 +55,3 @@ model.fit(X_train, y_train)
 
 # Score the model off test data that it was not trained on
 print(model.score(X_test, y_test))
-
-# Save model and scaler
-# save_model = open('run_models/boiling_gse_model.pkl', 'wb')
-# save_scaler = open('run_models/boiling_gse_scaler.pkl', 'wb')
-# pickle.dump(model, save_model)
-# pickle.dump(scaler, save_scaler)

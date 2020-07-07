@@ -2,9 +2,10 @@
 Removes redundancy from models that use other models as an input
 """
 import pickle
-from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors, Descriptors, DataStructs
 import numpy as np
+from rdkit import Chem
+from rdkit.Chem import rdMolDescriptors, Descriptors
+from functions import pka_similarities
 
 
 # All models inherit this as all the models are pickled
@@ -42,17 +43,6 @@ class AcidpKa(ChemicalModel):
 
     def run(self, fingerprint):
         return self.model.predict(self.scaler.transform(np.asarray(fingerprint).reshape(1, -1)))[0]
-
-
-# Function that returns n amount of similar molecules and their pKa
-def pka_similarities(mol, mol_set, n):
-    mol_fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(mol))
-    similarity = []
-    for molecule in mol_set:
-        sim = DataStructs.DiceSimilarity(mol_fp, molecule[2])
-        similarity.append([sim, molecule[1]])
-
-    return np.asarray(sorted(similarity)[:n]).flatten()
 
 
 class AcidSimilarity(ChemicalModel):
