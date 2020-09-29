@@ -7,13 +7,10 @@ from rdkit import Chem
 from rdkit import DataStructs
 from rdkit.Chem import rdMolDescriptors
 
-data = open('data/benzodiazepine_activator/total_smiles.txt', 'r')
 
-molecules = []
-
-for line in data.readlines():
-    compound = Chem.MolFromSmiles(line[:-1])
-    molecules.append((rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound), compound))
+def mol_similarity_grid(mols, size, row):
+    sorted_mols = sort_similarity(mols[1:], [mols[0]])
+    return Draw.MolsToGridImage([x[1] for x in sorted_mols], molsPerRow=row, subImgSize=size)
 
 
 def sort_similarity(mols, sort):
@@ -31,6 +28,14 @@ def sort_similarity(mols, sort):
     return sort
 
 
-sorted_mols = sort_similarity(molecules[1:], [molecules[0]])
-img = Draw.MolsToGridImage([x[1] for x in sorted_mols], molsPerRow=10, subImgSize=(200, 200))
-img.save('molecules.png')
+if __name__ == "__main__":
+    data = open('data/benzodiazepine_activator/total_smiles.txt', 'r')
+    molecules = []
+
+    for line in data.readlines():
+        compound = Chem.MolFromSmiles(line[:-1])
+        molecules.append((rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound), compound))
+
+    new_mols = sort_similarity(molecules[1:], [molecules[0]])
+    img = Draw.MolsToGridImage([x[1] for x in new_mols], molsPerRow=10, subImgSize=(200, 200))
+    img.save('molecules.png')
