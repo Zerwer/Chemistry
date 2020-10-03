@@ -13,16 +13,21 @@ def mol_similarity_grid(mols, size, row):
     return Draw.MolsToGridImage([x[1] for x in sorted_mols], molsPerRow=row, subImgSize=size)
 
 
+# Sorts a list of molecules by similarity
 def sort_similarity(mols, sort):
-    largest = [0, None]
+    largest = [0, mols[0]]
+
+    # Find the most similar molecule by finding largest similarity score
     for mol in mols:
         similarity = DataStructs.DiceSimilarity(sort[len(sort)-1][0], mol[0])
         if similarity > largest[0]:
             largest = [similarity, mol]
 
+    # Move the molecule from unsorted list to sorted list
     mols.remove(largest[1])
-
     sort.append(largest[1])
+
+    # check if there are more mols to sort
     if len(mols) > 0:
         sort_similarity(mols, sort)
     return sort
