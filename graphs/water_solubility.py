@@ -33,7 +33,7 @@ for line in data.readlines():
     mw = Descriptors.ExactMolWt(compound)
     rb = rdMolDescriptors.CalcNumRotatableBonds(compound)
     ap = len(compound.GetSubstructMatches(Chem.MolFromSmarts('[a]')))/compound.GetNumHeavyAtoms()
-    esol = 0.16 -  0.63*logP - 0.0062*mw + 0.066*rb - 0.74*ap
+    esol = 0.16 - 0.63*logP - 0.0062*mw + 0.066*rb - 0.74*ap
 
     x1.append(float(logP_sol))
     x2.append(float(atom_pair_sol))
