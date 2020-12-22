@@ -1,3 +1,4 @@
+# Transforms the aqsol database into text file format
 aqsoldb = open('data/water_solubility/aqsol.csv', 'r')
 new = open('aqsol.txt', 'w')
 

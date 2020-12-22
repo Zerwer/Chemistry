@@ -1,14 +1,15 @@
-"""
-All general functions go here instead of chemical models
-"""
+# Common reusable functions
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, DataStructs
 
 
-# Function that returns n amount of similar molecules and their pKa
-def pka_similarities(mol, mol_set, n):
-    mol_fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(mol))
+# Consumes a molecule and a list of molecules and produces a list of n most
+#   similar molecules from mol_set
+# Length of mol_set <= n
+def pka_similarities(smile, mol_set, n):
+    mol = Chem.MolFromSmiles(smile)
+    mol_fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
     similarity = []
     for molecule in mol_set:
         sim = DataStructs.DiceSimilarity(mol_fp, molecule[2])

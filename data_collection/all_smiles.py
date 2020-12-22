@@ -1,3 +1,4 @@
+# Combines all the SMILES strings from the files in files into one large file
 files = ['data/benzodiazepine_activator/total_smiles.txt',
          'data/boiling_point/all_compounds.txt',
          'data/melting_point/mp.txt',
@@ -10,6 +11,7 @@ smiles = []
 for file in files:
     for line in open(file, 'r').readlines():
         smile = line.split(' ')[0]
+        # Uniqueness
         if smile not in smiles:
             smiles.append(smile)
 

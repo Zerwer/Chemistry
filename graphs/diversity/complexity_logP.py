@@ -1,7 +1,4 @@
-import sys
-sys.path.append('/Users/aidan/Programming/python/Chemistry/common/chemical_models.py')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, GraphDescriptors, Descriptors
 from chemical_models import LogP
