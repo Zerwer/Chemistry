@@ -1,7 +1,6 @@
-"""
-Creates a png of a list of SMILES
-Iterates over compounds, finds most similar then finds most similar to that compound until all compounds are arranged
-"""
+# Creates a png of a list of SMILES
+# Iterates over compounds, finds most similar then finds most similar to that
+#   compound until all compounds are arranged
 from rdkit.Chem import Draw
 from rdkit import Chem
 from rdkit import DataStructs
@@ -9,11 +8,13 @@ from rdkit.Chem import rdMolDescriptors
 
 
 def mol_similarity_grid(mols, size, row):
-    sorted_mols = sort_similarity(mols[1:], [mols[0]])
-    return Draw.MolsToGridImage([x[1] for x in sorted_mols], molsPerRow=row, subImgSize=size)
+    sort = sort_similarity(mols[1:], [mols[0]])
+    sorted_mols = [x[1] for x in sort]
+    draw = Draw.MolsToGridImage(sorted_mols, molsPerRow=row, subImgSize=size)
+    return draw
 
 
-# Sorts a list of molecules by similarity
+# Sorts a list of molecules by similarity using simple insertion sort
 def sort_similarity(mols, sort):
     largest = [0, mols[0]]
 

@@ -1,4 +1,4 @@
-# Plot different neural networks to predict solubility
+# Compares several models ability to predict solubility
 import matplotlib.pyplot as plt
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, Descriptors
@@ -6,7 +6,6 @@ from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, Com
 
 data = open('data/water_solubility/aqsol.txt', 'r')
 
-# Load necessary models
 logP_model = LogP('logP')
 logP_solubility_model = LogPSolubility('logS_logP')
 atom_pair_sol_model = AtomPairSolubility('water_solubility')
@@ -19,11 +18,9 @@ y1, y2, y3, y4 = [], [], [], []
 for line in data.readlines():
     split = line.split(' ')
 
-    # Generate RDKit molecule and Atom Pair fingerprint
     compound = Chem.MolFromSmiles(split[0])
     fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound)
 
-    # Use models to predict logP and logS through different methods
     logP = logP_model.run(fingerprint)
     logP_sol = logP_solubility_model.run(logP)
     atom_pair_sol = atom_pair_sol_model.run(fingerprint)

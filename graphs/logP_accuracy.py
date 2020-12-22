@@ -16,7 +16,8 @@ for line in data.readlines():
     split = line.split(' ')
 
     # Calculate Atom Pair Fingerprint
-    fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0]))
+    mol = Chem.MolFromSmiles(split[0])
+    fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
 
     # Predict logP
     logP = logP_model.run(fingerprint)

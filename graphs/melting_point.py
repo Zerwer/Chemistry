@@ -1,10 +1,6 @@
-"""
-Graphs the predicted versus actual melting point using the reverse gse model
-"""
+# Graphs the predicted versus actual melting point using the reverse gse model
 import matplotlib.pyplot as plt
-from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors
-from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility, MeltingPoint
+from common.chemical_models import *
 
 data = open('data/melting_point/mp.txt', 'r')
 
@@ -23,14 +19,14 @@ for line in data.readlines():
     split = line.split(' ')
 
     # Generate RDKit molecule and Atom Pair fingerprint
-    compound = Chem.MolFromSmiles(split[0])
-    fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(compound)
+    mol = Chem.MolFromSmiles(split[0])
+    fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
 
     # Use models to predict logP and logS
     logP = logP_model.run(fingerprint)
     logP_sol = logP_solubility_model.run(logP)
     atom_pair_sol = atom_pair_sol_model.run(fingerprint)
-    combined_sol = combined_model.run(compound, logP, logP_sol, atom_pair_sol)
+    combined_sol = combined_model.run(mol, logP, logP_sol, atom_pair_sol)
 
     mp = melting_model.run(combined_sol, logP)
 

@@ -1,3 +1,5 @@
+# Produces a 3D scatter plot of the distribution of a list of molecules
+#   based on complexity, logP values, and molecular weight
 import matplotlib.pyplot as plt
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, GraphDescriptors, Descriptors
@@ -18,7 +20,6 @@ for smile in smiles:
     mol = Chem.MolFromSmiles(smile)
     fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
 
-    # Predict logP
     logP = logP_model.run(fingerprint)
     bertz = GraphDescriptors.BertzCT(mol)
 
