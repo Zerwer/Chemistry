@@ -1,6 +1,5 @@
-"""
-Predicts acid pKa by combining three fingerprints, avalon, maacs, and atom pair
-"""
+# Predicts acid pKa by combining three fingerprints, avalon, maacs,
+#   and atom pair
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -20,20 +19,21 @@ y = []
 for line in data.readlines():
     split = line.split(' ')
 
+    mol = Chem.MolFromSmiles(split[0])
+
     # Combine avalon, maacs, atom pair fingerprints
-    X.append(GetAvalonFP(Chem.MolFromSmiles(split[0]))+MACCSkeys.GenMACCSKeys(Chem.MolFromSmiles(split[0])) +
-             rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
+    X.append(GetAvalonFP(mol) +
+             MACCSkeys.GenMACCSKeys(mol) +
+             rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol))
     y.append(float(split[1][:-1]))
 
-# Scale data for better accuracy
 scaler = preprocessing.StandardScaler()
 X = scaler.fit_transform(np.asarray(X))
 y = np.asarray(y)
 
-# Split data into training and test set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1,
+                                                    random_state=1)
 
-# Create the model and fit to data
 model = MLPRegressor(solver='adam',
                      alpha=0.0001,
                      hidden_layer_sizes=(256, 128,),
@@ -43,10 +43,8 @@ model = MLPRegressor(solver='adam',
                      batch_size=500)
 model.fit(X_train, y_train)
 
-# Score the model off test data that it was not trained on
 print(model.score(X_test, y_test))
 
-# Save model and scaler
 save_model = open('run_models/pKa_acid_model.pkl', 'wb')
 save_scaler = open('run_models/pKa_acid_scaler.pkl', 'wb')
 pickle.dump(model, save_model)

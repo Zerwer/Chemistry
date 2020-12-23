@@ -1,3 +1,5 @@
+# Regression neural network for predicting octanol-water partition coefficient,
+#   Uses hyperparameter-tuning
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn import preprocessing
@@ -14,11 +16,11 @@ y = []
 for line in data.readlines():
     split = line.split(' ')
 
-    # Use Atom Pair fingerprint to represent the molecule
-    X.append(rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
+    mol = Chem.MolFromSmiles(split[0])
+    fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
+    X.append(fingerprint)
     y.append(float(split[1][:-1]))
 
-# Scale data for better accuracy
 scaler = preprocessing.StandardScaler()
 X = scaler.fit_transform(np.asarray(X))
 y = np.asarray(y)
@@ -28,12 +30,9 @@ param_grid = {'alpha': 10.0 ** -np.arange(1, 7),
               'max_iter': [50, 100, 150],
               'batch_size': [500, 3000, 6000]}
 
-# Create the model
 model = MLPRegressor(solver='adam', hidden_layer_sizes=(1026, 128,), verbose=1)
 
-# Using Grid Search and Cross Validation find best parameters, use all available cores
 search = GridSearchCV(model, param_grid=param_grid, cv=5, n_jobs=-1)
 search.fit(X, y)
 
-# Print the best parameters
 print(search.best_params_)

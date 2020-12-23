@@ -1,10 +1,4 @@
-"""
-Regression neural network to predict boiling point
-
-Requires a deeper network with more samples to achieve any good results
-
-Atom Pair               |   1026, 128
-"""
+# Regression model to predict boiling point
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -17,21 +11,22 @@ data = open('data/boiling_point/bt.txt', 'r')
 X = []
 Y = []
 
-# Read the molecule and corresponding boiling point and split into X and Y
 for line in data.readlines():
     split = line.split(' ')
-
-    # Use Atom Pair fingerprint to represent the molecule
-    X.append(rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0])))
+    mol = Chem.MolFromSmiles(split[0])
+    fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
+    X.append(fingerprint)
     Y.append(float(split[1][:-1]))
 
 scaler = preprocessing.StandardScaler()
 X = scaler.fit_transform(np.asarray(X))
 Y = np.asarray(Y)
 
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1,
+                                                    random_state=1)
 
-model = MLPRegressor(solver='adam', alpha=1e-5, hidden_layer_sizes=(1026, 128,), random_state=1, verbose=1, max_iter=57, batch_size=100)
+model = MLPRegressor(solver='adam', alpha=1e-5, hidden_layer_sizes=(1026, 128,),
+                     random_state=1, verbose=1, max_iter=57, batch_size=100)
 
 model.fit(X_train, y_train)
 

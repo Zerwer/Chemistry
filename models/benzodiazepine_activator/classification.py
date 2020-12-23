@@ -1,3 +1,5 @@
+# Simple benzodiazepine classfication model based on similarity
+#   to other benzodiazepines
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 from rdkit import DataStructs

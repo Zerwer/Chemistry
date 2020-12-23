@@ -1,6 +1,4 @@
-"""
-Regression prediction of LogS from Octanol-Water partition coefficient (LogP)
-"""
+# Regression prediction of LogS from Octanol-Water partition coefficient (LogP)
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -12,39 +10,35 @@ from chemical_models import LogP
 
 data = open('data/water_solubility/aqsol.txt', 'r')
 
-# Load logP model
 logP_model = LogP('logP')
 
 X = []
 Y = []
 
-# Read the molecule and corresponding solubility and split into X and Y
 for line in data.readlines():
     split = line.split(' ')
 
-    # Calculate logP from SMILES
-    compound = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(Chem.MolFromSmiles(split[0]))
-    logP = logP_model.run(compound)
+    mol = Chem.MolFromSmiles(split[0])
+    fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
+
+    logP = logP_model.run(fingerprint)
 
     X.append(logP)
     Y.append(float(split[1][:-1]))
 
-# Scale data for better accuracy
 scaler = preprocessing.StandardScaler()
 X = scaler.fit_transform(np.asarray(X).reshape(-1, 1))
 Y = np.asarray(Y)
 
-# Split data into training and test set
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1,
+                                                    random_state=1)
 
-# Create the model and fit to data
-model = MLPRegressor(solver='adam', alpha=1e-5, hidden_layer_sizes=(1048, 256), random_state=1, verbose=1, max_iter=34, batch_size=500)
+model = MLPRegressor(solver='adam', alpha=1e-5, hidden_layer_sizes=(1048, 256),
+                     random_state=1, verbose=1, max_iter=34, batch_size=500)
 model.fit(X_train, y_train)
 
-# Score the model off test data that it was not trained on
 print(model.score(X_test, y_test))
 
-# Save model and scaler
 save_model = open('run_models/logS_logP_model.pkl', 'wb')
 save_scaler = open('run_models/logS_logP_scaler.pkl', 'wb')
 pickle.dump(model, save_model)
