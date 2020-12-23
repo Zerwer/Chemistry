@@ -8,9 +8,7 @@ class PartitionCoefficient(APIFunction):
     def run(self, data):
         part_data = experimental_properties(data, 'Octanol/Water Partition Coefficient')
 
-        # Octanol Water Partition Coefficient
         owpc = []
-
         for point in part_data['Information']:
             if 'est' not in str(point['Value'] and
                                 'ph' not in str(point['Value'])):

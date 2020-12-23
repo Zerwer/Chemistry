@@ -11,7 +11,6 @@ smiles = []
 for file in files:
     for line in open(file, 'r').readlines():
         smile = line.split(' ')[0]
-        # Uniqueness
         if smile not in smiles:
             smiles.append(smile)
 

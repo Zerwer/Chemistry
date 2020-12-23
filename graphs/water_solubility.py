@@ -42,7 +42,6 @@ for line in data.readlines():
     y3.append(float(split[1][:-1]))
     y4.append(float(split[1][:-1]))
 
-# Create four plots for each prediction method
 plt.subplot(221)
 plt.scatter(x1, y1, s=1)
 plt.xlabel('Predicted')
