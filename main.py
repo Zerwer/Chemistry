@@ -1,18 +1,15 @@
-"""
-GUI app to interact with the models easily
-"""
+# GUI app to interact with the models easily
 import sys
 from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout, QLineEdit, QTabWidget, QPushButton, QFileDialog
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QImage, QPixmap
-from rdkit import Chem
-from math import floor, sqrt, ceil
-from rdkit.Chem import Draw, rdMolDescriptors, Descriptors
+from math import sqrt, ceil
+from rdkit.Chem import Draw
 from chemical_models import *
+from functions import logs_to_mg_ml
 from graphs.molecule_relative_similarity import mol_similarity_grid
 
-# Load models
 logP_model = LogP('logP')
 logP_solubility_model = LogPSolubility('logS_logP')
 atom_pair_sol_model = AtomPairSolubility('water_solubility')
@@ -63,14 +60,17 @@ class MainWidget(QTabWidget):
         # Initiate tabs
         self.mol_selection_ui()
         self.mol_display_ui()
+        self.mol_properties_ui()
+
+    # UI layout functions got here:
 
     def mol_selection_ui(self):
         layout = QVBoxLayout()
         layout.addWidget(self.smiles)
         layout.addWidget(self.selection_instruction)
         layout.addWidget(self.select_smiles_file)
-        self.selection_instruction.setText('Or select a file containing a list of '
-                                           'SMILES strings')
+        self.selection_instruction.setText('Or select a file containing a list '
+                                           'of SMILES strings')
         self.mol_selection.setLayout(layout)
 
     def mol_display_ui(self):
@@ -78,17 +78,45 @@ class MainWidget(QTabWidget):
         layout.addWidget(self.mol_img)
         self.mol_display.setLayout(layout)
 
+    def mol_properties_ui(self):
+        layout = QVBoxLayout()
+        layout.addWidget(self.logP)
+        layout.addWidget(self.solubility)
+        layout.addWidget(self.melting)
+        self.mol_properties.setLayout(layout)
+
+    # Other functions:
+
     def mols_loaded(self):
         if len(self.mols) == 1:
-            img = QImage(ImageQt(Draw.MolToImage(self.mols[0], size=(700, 700))))
+            mol = self.mols[0]
+
+            img = QImage(ImageQt(Draw.MolToImage(mol, size=(700, 700))))
+            fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
+            logP = logP_model.run(fp)
+            logP_sol = logP_solubility_model.run(logP)
+            atom_pair_sol = atom_pair_sol_model.run(fp)
+            combined_sol = combined_model.run(mol, logP,
+                                              logP_sol, atom_pair_sol)
+
+            mg_ml_sol = logs_to_mg_ml(combined_sol, mol)
+            mp = melting_point_model.run(combined_sol, logP)
+
+            self.logP.setText('LogP: ' + str(round(logP, 2)))
+            self.solubility.setText('Water Solubility(mg/mL): ' +
+                                    str(round(mg_ml_sol, 2)))
+            self.melting.setText('Melting Point(C): ' + str(round(mp, 2)))
             self.mol_img.setPixmap(QPixmap(img))
+
         elif len(self.mols) <= 35:
             fps = []
             for mol in self.mols:
-                fps.append((rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol), mol))
+                fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
+                fps.append((fingerprint, mol))
             dim = int(ceil(sqrt(len(self.mols))))
 
-            img = QImage(ImageQt(mol_similarity_grid(fps, (int(700/dim), int(700/dim)), dim)))
+            img = QImage(ImageQt(mol_similarity_grid(fps, (int(700/dim),
+                                                     int(700/dim)), dim)))
             self.mol_img.setPixmap(QPixmap(img))
 
     @pyqtSlot()
@@ -113,20 +141,6 @@ class MainWidget(QTabWidget):
             # with f:
             #     data = f.read()
             #     self.contents.setText(data)
-
-        # img = QImage(ImageQt(Draw.MolToImage(mol)))
-        # fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
-        # logP = logP_model.run(fp)
-        # logP_sol = logP_solubility_model.run(logP)
-        # atom_pair_sol = atom_pair_sol_model.run(fp)
-        # combined_sol = combined_model.run(mol, logP, logP_sol, atom_pair_sol)
-        # mg_l_sol = (10.0**float(combined_sol)) * float(Descriptors.ExactMolWt(mol))
-        # mp = melting_point_model.run(combined_sol, logP)
-        #
-        # self.logP.setText('LogP: ' + str(round(logP, 2)))
-        # self.solubility.setText('Water Solubility(mg/L): ' + str(round(mg_l_sol, 2)))
-        # self.melting.setText('Melting Point(C): ' + str(round(mp, 2)))
-        # self.mol_img.setPixmap(QPixmap(img))
 
 
 app = QApplication(sys.argv)

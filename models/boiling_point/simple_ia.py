@@ -18,6 +18,13 @@ from rdkit.Chem import MACCSkeys
 from rdkit.Chem import rdMolDescriptors
 
 fingerprint_type = 3
+fingerprints = {
+    0: AllChem.GetMorganFingerprintAsBitVect,
+    1: Chem.RDKFingerprint,
+    2: MACCSkeys.GenMACCSKeys,
+    3: rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect,
+    4: rdMolDescriptors.GetHashedTopologicalTorsionFingerprintAsBitVect
+}
 shape = {0: (512, 16),
          1: (513, 64),
          2: (96, 32),
@@ -33,21 +40,8 @@ for line in data.readlines():
     split = line.split(' ')
     mol = Chem.MolFromSmiles(split[0])
 
-    # Use dictionaries to avoid calculating all fingerprints
-    fingerprints = {
-        0: AllChem.GetMorganFingerprintAsBitVect,
-        1: Chem.RDKFingerprint,
-        2: MACCSkeys.GenMACCSKeys,
-        3: rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect,
-        4: rdMolDescriptors.GetHashedTopologicalTorsionFingerprintAsBitVect
-    }
-    kwargs = {
-        0: [mol, 2],
-        1: [mol],
-        2: [mol],
-        3: [mol],
-        4: [mol]
-    }
+    kwargs = {0: [mol, 2], 1: [mol], 2: [mol], 3: [mol], 4: [mol]}
+
     X.append(fingerprints[fingerprint_type](*kwargs[fingerprint_type]))
 
     # Ranges for boiling point based on normal distribution
@@ -63,7 +57,8 @@ for line in data.readlines():
 X = preprocessing.scale(np.asarray(X))
 Y = np.asarray(Y)
 
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1,
+                                                    random_state=1)
 
 clf = MLPClassifier(solver='adam', alpha=1e-5,
                     hidden_layer_sizes=shape[fingerprint_type],

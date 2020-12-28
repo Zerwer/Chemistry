@@ -1,7 +1,7 @@
 # Common reusable functions
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors, DataStructs
+from rdkit.Chem import rdMolDescriptors, DataStructs, Descriptors
 
 
 # Consumes a molecule and a list of molecules and produces a list of n most
@@ -16,3 +16,9 @@ def pka_similarities(smile, mol_set, n):
         similarity.append([sim, molecule[1]])
 
     return np.asarray(sorted(similarity)[:n]).flatten()
+
+
+# Converts the logS value of a molecule to mg/mL
+def logs_to_mg_ml(logs, mol):
+    mg_l = (10.0 ** float(logs)) * float(Descriptors.ExactMolWt(mol))
+    return mg_l
