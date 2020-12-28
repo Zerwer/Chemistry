@@ -22,8 +22,9 @@ class MainWidget(QTabWidget):
     def __init__(self):
         QTabWidget.__init__(self)
 
-        # Stores the list of SMILES strings
+        # Stores both the RDKit Mol and SMILES
         self.mols = []
+        self.smiles = []
 
         # Set the overall layout
         self.layout = QVBoxLayout()
@@ -33,18 +34,19 @@ class MainWidget(QTabWidget):
         self.selection_instruction = QLabel()
         self.select_smiles_file = QPushButton('Select File')
         self.mol_img = QLabel()
+        self.mol_name = QLabel()
         self.logP = QLabel()
         self.solubility = QLabel()
         self.melting = QLabel()
-        self.smiles = QLineEdit()
+        self.entry = QLineEdit()
 
         # Configure widgets
-        self.smiles.setPlaceholderText('Enter SMILES string separated by commas')
+        self.entry.setPlaceholderText('Enter SMILES string separated by commas')
         self.setWindowTitle('Chemistry')
 
         # Connect widgets to slots
         self.select_smiles_file.pressed.connect(self.select_file)
-        self.smiles.returnPressed.connect(self.string_returned)
+        self.entry.returnPressed.connect(self.string_returned)
 
         # Create and add tabs here
         self.mol_selection = QWidget()
@@ -66,7 +68,7 @@ class MainWidget(QTabWidget):
 
     def mol_selection_ui(self):
         layout = QVBoxLayout()
-        layout.addWidget(self.smiles)
+        layout.addWidget(self.entry)
         layout.addWidget(self.selection_instruction)
         layout.addWidget(self.select_smiles_file)
         self.selection_instruction.setText('Or select a file containing a list '
@@ -80,6 +82,7 @@ class MainWidget(QTabWidget):
 
     def mol_properties_ui(self):
         layout = QVBoxLayout()
+        layout.addWidget(self.mol_name)
         layout.addWidget(self.logP)
         layout.addWidget(self.solubility)
         layout.addWidget(self.melting)
@@ -87,27 +90,28 @@ class MainWidget(QTabWidget):
 
     # Other functions:
 
+    def calculate_properties(self, mol, smile):
+        img = QImage(ImageQt(Draw.MolToImage(mol, size=(700, 700))))
+        fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
+        logP = logP_model.run(fp)
+        logP_sol = logP_solubility_model.run(logP)
+        atom_pair_sol = atom_pair_sol_model.run(fp)
+        combined_sol = combined_model.run(mol, logP,
+                                          logP_sol, atom_pair_sol)
+
+        mg_ml_sol = logs_to_mg_ml(combined_sol, mol)
+        mp = melting_point_model.run(combined_sol, logP)
+
+        self.mol_name.setText(smile)
+        self.logP.setText('LogP: ' + str(round(logP, 2)))
+        self.solubility.setText('Water Solubility(mg/mL): ' +
+                                str(round(mg_ml_sol, 2)))
+        self.melting.setText('Melting Point(C): ' + str(round(mp, 2)))
+        self.mol_img.setPixmap(QPixmap(img))
+
     def mols_loaded(self):
         if len(self.mols) == 1:
-            mol = self.mols[0]
-
-            img = QImage(ImageQt(Draw.MolToImage(mol, size=(700, 700))))
-            fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
-            logP = logP_model.run(fp)
-            logP_sol = logP_solubility_model.run(logP)
-            atom_pair_sol = atom_pair_sol_model.run(fp)
-            combined_sol = combined_model.run(mol, logP,
-                                              logP_sol, atom_pair_sol)
-
-            mg_ml_sol = logs_to_mg_ml(combined_sol, mol)
-            mp = melting_point_model.run(combined_sol, logP)
-
-            self.logP.setText('LogP: ' + str(round(logP, 2)))
-            self.solubility.setText('Water Solubility(mg/mL): ' +
-                                    str(round(mg_ml_sol, 2)))
-            self.melting.setText('Melting Point(C): ' + str(round(mp, 2)))
-            self.mol_img.setPixmap(QPixmap(img))
-
+            self.calculate_properties(self.mols[0], self.smiles[0])
         elif len(self.mols) <= 35:
             fps = []
             for mol in self.mols:
@@ -122,11 +126,13 @@ class MainWidget(QTabWidget):
     @pyqtSlot()
     def string_returned(self):
         self.mols = []
-        for mol in self.smiles.text().replace(' ', '').split(','):
+        for mol in self.entry.text().replace(' ', '').split(','):
             try:
                 self.mols.append(Chem.MolFromSmiles(mol))
+                self.smiles.append(mol)
             except Exception as e:
                 print(e)
+
         self.mols_loaded()
 
     def select_file(self):

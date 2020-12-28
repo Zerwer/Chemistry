@@ -20,5 +20,5 @@ def pka_similarities(smile, mol_set, n):
 
 # Converts the logS value of a molecule to mg/mL
 def logs_to_mg_ml(logs, mol):
-    mg_l = (10.0 ** float(logs)) * float(Descriptors.ExactMolWt(mol))
-    return mg_l
+    mg_ml = (10.0 ** float(logs)) * float(Descriptors.ExactMolWt(mol))
+    return mg_ml
