@@ -17,6 +17,93 @@ combined_model = CombinedSolubility('combined_solubility')
 melting_point_model = MeltingPoint('melting_gse')
 
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        # Stores both the RDKit Mol and SMILES
+        self.mols = []
+        self.smiles = []
+
+        self.toolbar = QToolBar()
+        self.widget = MainWidget()
+
+        self.smiles = EnterSmiles(self.mols, self.smiles)
+
+        self.setCentralWidget(self.widget)
+        self.create_toolbar()
+
+    def create_toolbar(self):
+        menu_bar = self.menuBar()
+        menu_bar.setNativeMenuBar(True)
+
+        file_menu = menu_bar.addMenu(' &File')
+
+        smiles_act = QAction(' Enter SMILES', self)
+
+        smiles_act.setShortcut('Ctrl+J')
+        smiles_act.setStatusTip('Manually enter SMILES strings')
+        smiles_act.triggered.connect(self.smiles_action)
+
+        file_menu.addAction(smiles_act)
+        file_menu.addAction('Open...')
+
+        self.setMenuBar(menu_bar)
+
+    def mols_loaded(self):
+        if len(self.mols) == 1:
+            self.calculate_properties(self.mols[0], self.smiles[0])
+        elif len(self.mols) <= 35:
+            fps = []
+            for mol in self.mols:
+                fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
+                fps.append((fingerprint, mol))
+            dim = int(ceil(sqrt(len(self.mols))))
+
+            img = QImage(ImageQt(mol_similarity_grid(fps, (int(700/dim),
+                                                     int(700/dim)), dim)))
+            self.mol_img.setPixmap(QPixmap(img))
+
+    def smiles_action(self):
+        if self.smiles.isHidden():
+            self.smiles.show()
+        else:
+            self.smiles.hide()
+
+
+class EnterSmiles(QWidget):
+    def __init__(self, mols, smiles):
+        super().__init__()
+
+        self.mols = mols
+        self.smiles = smiles
+
+        self.resize(400, 100)
+
+        # Set the overall layout
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.entry = QLineEdit()
+
+        self.entry.setPlaceholderText('Enter SMILES string separated by commas')
+        self.entry.returnPressed.connect(self.string_returned)
+
+        self.layout.addWidget(self.entry)
+
+    @pyqtSlot()
+    def string_returned(self):
+        self.mols = []
+        for mol in self.entry.text().replace(' ', '').split(','):
+            try:
+                self.mols.append(Chem.MolFromSmiles(mol))
+                self.smiles.append(mol)
+            except Exception as e:
+                print(e)
+
+        self.mols_loaded()
+
+
 # Main widget of the application
 class MainWidget(QTabWidget):
     def __init__(self):
@@ -65,7 +152,6 @@ class MainWidget(QTabWidget):
         self.mol_properties_ui()
 
     # UI layout functions got here:
-
     def mol_selection_ui(self):
         layout = QVBoxLayout()
         layout.addWidget(self.entry)
@@ -151,7 +237,7 @@ class MainWidget(QTabWidget):
 
 app = QApplication(sys.argv)
 
-widget = MainWidget()
-widget.resize(800, 800)
-widget.show()
+window = MainWindow()
+window.resize(800, 600)
+window.show()
 sys.exit(app.exec_())
