@@ -32,23 +32,38 @@ class MainWindow(QMainWindow):
         # Stores both the RDKit Mol and SMILES
         self.mols = []
         self.smiles = []
+        # Mols that should be displayed
+        self.displayed_mols = []
+        self.displayed_smiles = []
 
         self.toolbar = QToolBar()
+        self.search_bar = QLineEdit()
         self.table = QTableWidget()
+
         self.table.setFixedWidth(floor(w/2))
 
-        self.smiles_entry = EnterSmiles(self.mols, self.smiles, self.mols_loaded)
+        self.smiles_entry = EnterSmiles(self.mols, self.smiles,
+                                        self.displayed_mols,
+                                        self.displayed_smiles, self.mols_loaded)
         self.properties = Properties()
 
         self.create_toolbar()
+        self.create_search_bar()
 
-        self.layout.addWidget(self.table, 0, 0)
-        self.layout.addWidget(self.properties, 0, 1)
+        self.layout.addWidget(self.search_bar, 0, 0)
+        self.layout.addWidget(self.table, 1, 0)
+        self.layout.addWidget(self.properties, 1, 1)
 
         self.setCentralWidget(self.central_widget)
 
         self.properties.change_mol()
         self.mols_loaded()
+
+    def create_search_bar(self):
+        self.search_bar.setFixedWidth(floor(w / 2))
+
+        self.search_bar.setPlaceholderText('Search...')
+        self.search_bar.returnPressed.connect(self.string_searched)
 
     def create_toolbar(self):
         menu_bar = self.menuBar()
@@ -68,12 +83,12 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menu_bar)
 
     def mols_loaded(self):
-        if len(self.mols) == 0:
-            return
-
         self.table.clear()
 
-        self.table.setRowCount(len(self.mols))
+        if len(self.displayed_mols) == 0:
+            return
+
+        self.table.setRowCount(len(self.displayed_mols))
         self.table.setColumnCount(1)
 
         self.table.verticalHeader().setVisible(False)
@@ -88,13 +103,25 @@ class MainWindow(QMainWindow):
         self.table.cellActivated.connect(self.item_selected)
         self.table.cellEntered.connect(self.item_selected)
 
-        for i, smile in enumerate(self.smiles):
+        for i, smile in enumerate(self.displayed_smiles):
             self.table.setRowHeight(i, 50)
             item = QTableWidgetItem(smile)
             self.table.setItem(i, 0, item)
 
+    # Search checks for SMILES similarities
+    def string_searched(self):
+        self.displayed_mols.clear()
+        self.displayed_smiles.clear()
+
+        for mol, smile in zip(self.mols, self.smiles):
+            if self.search_bar.text() in smile:
+                self.displayed_mols.append(mol)
+                self.displayed_smiles.append(smile)
+
+        self.mols_loaded()
+
     def item_selected(self, row, _):
-        self.properties.mol = self.mols[row]
+        self.properties.mol = self.displayed_mols[row]
         self.properties.change_mol()
 
     def smiles_action(self):
@@ -155,13 +182,15 @@ class Properties(QWidget):
 
 
 class EnterSmiles(QWidget):
-    def __init__(self, mols, smiles, load):
+    def __init__(self, mols, smiles, displayed_mols, displayed_smiles, load):
         super().__init__()
 
         self.setWindowTitle('Enter SMILES String')
 
         self.mols = mols
         self.smiles = smiles
+        self.displayed_mols = displayed_mols
+        self.displayed_smiles = displayed_smiles
         self.load = load
 
         self.resize(400, 100)
@@ -181,10 +210,16 @@ class EnterSmiles(QWidget):
     def string_returned(self):
         self.mols.clear()
         self.smiles.clear()
+        self.displayed_mols.clear()
+        self.displayed_smiles.clear()
+
         for mol in self.entry.text().replace(' ', '').split(','):
             try:
-                self.mols.append(Chem.MolFromSmiles(mol))
+                rd_mol = Chem.MolFromSmiles(mol)
+                self.mols.append(rd_mol)
+                self.displayed_mols.append(rd_mol)
                 self.smiles.append(mol)
+                self.displayed_smiles.append(mol)
             except Exception as e:
                 print(e)
 
