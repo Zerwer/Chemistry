@@ -4,11 +4,10 @@ from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QImage, QPixmap
-from math import sqrt, ceil
+from math import floor
 from rdkit.Chem import Draw
 from chemical_models import *
 from functions import logs_to_mg_ml
-from graphs.molecule_relative_similarity import mol_similarity_grid
 
 logP_model = LogP('logP')
 logP_solubility_model = LogPSolubility('logS_logP')
@@ -27,7 +26,7 @@ class MainWindow(QMainWindow):
         self.resize(w, h)
 
         self.central_widget = QWidget()
-        self.layout = QVBoxLayout()
+        self.layout = QGridLayout()
         self.central_widget.setLayout(self.layout)
 
         # Stores both the RDKit Mol and SMILES
@@ -35,25 +34,20 @@ class MainWindow(QMainWindow):
         self.smiles = []
 
         self.toolbar = QToolBar()
-
-        self.mol_img = QLabel()
-        self.mol_name = QLabel()
-        self.logP = QLabel()
-        self.solubility = QLabel()
-        self.melting = QLabel()
+        self.table = QTableWidget()
+        self.table.setFixedWidth(floor(w/2))
 
         self.smiles_entry = EnterSmiles(self.mols, self.smiles, self.mols_loaded)
+        self.properties = Properties()
 
         self.create_toolbar()
 
-        self.layout.addWidget(self.mol_img)
-        self.layout.addWidget(self.mol_name)
-        self.layout.addWidget(self.logP)
-        self.layout.addWidget(self.solubility)
-        self.layout.addWidget(self.melting)
+        self.layout.addWidget(self.table, 0, 0)
+        self.layout.addWidget(self.properties, 0, 1)
 
         self.setCentralWidget(self.central_widget)
 
+        self.properties.change_mol()
         self.mols_loaded()
 
     def create_toolbar(self):
@@ -62,7 +56,7 @@ class MainWindow(QMainWindow):
 
         file_menu = menu_bar.addMenu(' &File')
 
-        smiles_act = QAction(' Enter SMILES', self)
+        smiles_act = QAction('Enter SMILES', self)
 
         smiles_act.setShortcut('Ctrl+J')
         smiles_act.setStatusTip('Manually enter SMILES strings')
@@ -75,47 +69,33 @@ class MainWindow(QMainWindow):
 
     def mols_loaded(self):
         if len(self.mols) == 0:
-            self.mol_img.setText('No molecules selected')
-        elif len(self.mols) == 1:
-            img = QImage(ImageQt(Draw.MolToImage(self.mols[0], size=(int(w/2), int(h/2)))))
-            self.mol_img.setPixmap(QPixmap(img))
+            return
 
-            fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(self.mols[0])
-            logP = logP_model.run(fp)
-            logP_sol = logP_solubility_model.run(logP)
-            atom_pair_sol = atom_pair_sol_model.run(fp)
-            combined_sol = combined_model.run(self.mols[0], logP,
-                                              logP_sol, atom_pair_sol)
-            mg_ml_sol = logs_to_mg_ml(combined_sol, self.mols[0])
-            mp = melting_point_model.run(combined_sol, logP)
+        self.table.clear()
 
-            self.mol_name.show()
-            self.logP.show()
-            self.solubility.show()
-            self.melting.show()
+        self.table.setRowCount(len(self.mols))
+        self.table.setColumnCount(1)
 
-            self.mol_name.setText(self.smiles[0])
-            self.logP.setText('LogP: ' + str(round(logP, 2)))
-            self.solubility.setText('Water Solubility(mg/mL): ' +
-                                    str(round(mg_ml_sol, 2)))
-            self.melting.setText('Melting Point(C): ' + str(round(mp, 2)))
-            self.mol_img.setPixmap(QPixmap(img))
+        self.table.verticalHeader().setVisible(False)
+        self.table.horizontalHeader().setVisible(False)
 
-        elif len(self.mols) <= 35:
-            fps = []
-            for mol in self.mols:
-                fingerprint = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
-                fps.append((fingerprint, mol))
-            dim = int(ceil(sqrt(len(self.mols))))
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
 
-            img = QImage(ImageQt(mol_similarity_grid(fps, (int(700/dim),
-                                                     int(700/dim)), dim)))
+        self.table.setColumnWidth(0, floor(w/2))
 
-            self.mol_name.hide()
-            self.logP.hide()
-            self.solubility.hide()
-            self.melting.hide()
-            self.mol_img.setPixmap(QPixmap(img))
+        self.table.cellClicked.connect(self.item_selected)
+        self.table.cellActivated.connect(self.item_selected)
+        self.table.cellEntered.connect(self.item_selected)
+
+        for i, smile in enumerate(self.smiles):
+            self.table.setRowHeight(i, 50)
+            item = QTableWidgetItem(smile)
+            self.table.setItem(i, 0, item)
+
+    def item_selected(self, row, _):
+        self.properties.mol = self.mols[row]
+        self.properties.change_mol()
 
     def smiles_action(self):
         if self.smiles_entry.isHidden():
@@ -124,9 +104,61 @@ class MainWindow(QMainWindow):
             self.smiles_entry.hide()
 
 
+class Properties(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.mol = None
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.mol_img = QLabel()
+        self.logP = QLabel()
+        self.solubility = QLabel()
+        self.melting = QLabel()
+
+        self.layout.addWidget(self.mol_img)
+        self.layout.addWidget(self.logP)
+        self.layout.addWidget(self.solubility)
+        self.layout.addWidget(self.melting)
+
+    def change_mol(self):
+        if self.mol is None:
+            self.logP.hide()
+            self.solubility.hide()
+            self.melting.hide()
+
+            self.mol_img.setText('No Molecule Selected!')
+        else:
+            img = QImage(ImageQt(Draw.MolToImage(self.mol, size=(floor(w/2), floor(h/2)))))
+
+            fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(self.mol)
+            logP = logP_model.run(fp)
+            logP_sol = logP_solubility_model.run(logP)
+            atom_pair_sol = atom_pair_sol_model.run(fp)
+            combined_sol = combined_model.run(self.mol, logP,
+                                              logP_sol, atom_pair_sol)
+            mg_ml_sol = logs_to_mg_ml(combined_sol, self.mol)
+            mp = melting_point_model.run(combined_sol, logP)
+
+            self.logP.show()
+            self.solubility.show()
+            self.melting.show()
+
+            self.logP.setText('LogP: ' + str(round(logP, 2)))
+            self.solubility.setText('Water Solubility(mg/mL): ' +
+                                    str(round(mg_ml_sol, 2)))
+            self.melting.setText('Melting Point(C): ' + str(round(mp, 2)))
+
+            self.mol_img.setPixmap(QPixmap(img))
+
+
 class EnterSmiles(QWidget):
     def __init__(self, mols, smiles, load):
         super().__init__()
+
+        self.setWindowTitle('Enter SMILES String')
 
         self.mols = mols
         self.smiles = smiles
@@ -157,6 +189,7 @@ class EnterSmiles(QWidget):
                 print(e)
 
         self.load()
+        self.close()
 
 
 app = QApplication(sys.argv)

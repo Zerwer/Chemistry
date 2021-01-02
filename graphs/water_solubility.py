@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, Descriptors
-from common.chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
+from chemical_models import AtomPairSolubility, LogP, LogPSolubility, CombinedSolubility
 
 data = open('data/water_solubility/aqsol.txt', 'r')
 
