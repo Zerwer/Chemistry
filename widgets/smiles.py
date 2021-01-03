@@ -22,11 +22,16 @@ class EnterSmiles(QWidget):
         self.setLayout(self.layout)
 
         self.entry = QLineEdit()
+        self.enter = QPushButton()
 
         self.entry.setPlaceholderText('Enter SMILES string separated by commas')
         self.entry.returnPressed.connect(self.string_returned)
 
+        self.enter.setText('Enter')
+        self.enter.clicked.connect(self.string_returned)
+
         self.layout.addWidget(self.entry)
+        self.layout.addWidget(self.enter)
 
     def string_returned(self):
         self.mols.clear()

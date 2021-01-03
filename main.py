@@ -2,6 +2,7 @@
 import sys
 from widgets.smiles import EnterSmiles
 from widgets.properties import Properties
+from widgets.graph import GraphOptions
 from PyQt5.QtWidgets import *
 from math import floor
 from chemical_models import *
@@ -40,6 +41,7 @@ class MainWindow(QMainWindow):
                                         self.displayed_mols,
                                         self.displayed_smiles, self.mols_loaded)
         self.properties = Properties(self.models, w, h)
+        self.graph_options = GraphOptions()
 
         self.create_toolbar()
         self.create_search_bar()
@@ -76,7 +78,7 @@ class MainWindow(QMainWindow):
         graph_act.setStatusTip('Generate graph from loaded molecules')
 
         smiles_act.triggered.connect(self.smiles_action)
-        # graph_act.triggered.connect()
+        graph_act.triggered.connect(self.generate_graph)
 
         file_menu.addAction(smiles_act)
         view_menu.addAction(graph_act)
@@ -132,7 +134,10 @@ class MainWindow(QMainWindow):
             self.smiles_entry.hide()
 
     def generate_graph(self):
-        print('')
+        if self.graph_options.isHidden():
+            self.graph_options.show()
+        else:
+            self.graph_options.hide()
 
 
 app = QApplication(sys.argv)
