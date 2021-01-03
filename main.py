@@ -9,17 +9,6 @@ from chemical_models import *
 w, h = 800, 600
 
 
-class AllModels:
-    def __init__(self, logP, logP_sol, atom_pair_sol,
-                 combined_sol, melting_point, pKa):
-        self.logP_model = LogP(logP)
-        self.logP_solubility_model = LogPSolubility(logP_sol)
-        self.atom_pair_sol_model = AtomPairSolubility(atom_pair_sol)
-        self.combined_model = CombinedSolubility(combined_sol)
-        self.melting_point_model = MeltingPoint(melting_point)
-        self.pKa_model = GeneralPKa(pKa)
-
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
