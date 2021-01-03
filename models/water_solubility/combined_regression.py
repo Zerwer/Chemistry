@@ -41,9 +41,11 @@ scaler = preprocessing.StandardScaler()
 X = scaler.fit_transform(np.asarray(X))
 Y = np.asarray(Y)
 
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1,
+                                                    random_state=1)
 
-model = MLPRegressor(solver='adam', alpha=1e-5, hidden_layer_sizes=(1048, 128), random_state=1, verbose=1, max_iter=42, batch_size=500)
+model = MLPRegressor(solver='adam', alpha=1e-5, hidden_layer_sizes=(1048, 128),
+                     random_state=1, verbose=1, max_iter=42, batch_size=500)
 model.fit(X_train, y_train)
 
 print(model.score(X_test, y_test))
