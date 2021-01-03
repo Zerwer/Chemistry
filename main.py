@@ -2,7 +2,7 @@
 import sys
 from widgets.smiles import EnterSmiles
 from widgets.properties import Properties
-from widgets.graph import GraphOptions
+from widgets.graph import GraphOptions, AllGraphs
 from PyQt5.QtWidgets import *
 from math import floor
 from chemical_models import *
@@ -65,23 +65,21 @@ class MainWindow(QMainWindow):
         menu_bar = self.menuBar()
         menu_bar.setNativeMenuBar(True)
 
+        graphs = AllGraphs(self)
+
         file_menu = menu_bar.addMenu('File')
         view_menu = menu_bar.addMenu('View')
+        graph_menu = view_menu.addMenu('Graph')
 
         smiles_act = QAction('Enter SMILES', self)
-        graph_act = QAction('Generate Graph', self)
-
         smiles_act.setShortcut('Ctrl+J')
-        graph_act.setShortcut('Ctrl+G')
-
         smiles_act.setStatusTip('Manually enter SMILES strings')
-        graph_act.setStatusTip('Generate graph from loaded molecules')
 
         smiles_act.triggered.connect(self.smiles_action)
-        graph_act.triggered.connect(self.generate_graph)
+
+        graph_menu.addActions(graphs.actions)
 
         file_menu.addAction(smiles_act)
-        view_menu.addAction(graph_act)
         file_menu.addAction('Open...')
 
         self.setMenuBar(menu_bar)
