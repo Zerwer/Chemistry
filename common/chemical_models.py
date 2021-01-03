@@ -43,11 +43,15 @@ class MeltingPoint(ChemicalModel):
         return self.model.predict(scaled)[0]
 
 
-class AcidpKa(ChemicalModel):
+class GeneralPKa(ChemicalModel):
 
     def run(self, fingerprint):
         scaled = self.scaler.transform(np.asarray(fingerprint).reshape(1, -1))
         return self.model.predict(scaled)[0]
+
+
+class AcidpKa(GeneralPKa):
+    pass
 
 
 class AcidSimilarity(ChemicalModel):

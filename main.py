@@ -9,15 +9,23 @@ from chemical_models import *
 w, h = 800, 600
 
 
+class AllModels:
+    def __init__(self, logP, logP_sol, atom_pair_sol,
+                 combined_sol, melting_point, pKa):
+        self.logP_model = LogP(logP)
+        self.logP_solubility_model = LogPSolubility(logP_sol)
+        self.atom_pair_sol_model = AtomPairSolubility(atom_pair_sol)
+        self.combined_model = CombinedSolubility(combined_sol)
+        self.melting_point_model = MeltingPoint(melting_point)
+        self.pKa_model = GeneralPKa(pKa)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.logP_model = LogP('logP')
-        self.logP_solubility_model = LogPSolubility('logS_logP')
-        self.atom_pair_sol_model = AtomPairSolubility('water_solubility')
-        self.combined_model = CombinedSolubility('combined_solubility')
-        self.melting_point_model = MeltingPoint('melting_gse')
+        self.models = AllModels('logP', 'logS_logP', 'water_solubility',
+                                'combined_solubility', 'melting_gse', 'pKa')
 
         self.setWindowTitle('Chemistry')
         self.resize(w, h)
@@ -42,9 +50,7 @@ class MainWindow(QMainWindow):
         self.smiles_entry = EnterSmiles(self.mols, self.smiles,
                                         self.displayed_mols,
                                         self.displayed_smiles, self.mols_loaded)
-        self.properties = Properties(self.logP_model, self.logP_solubility_model,
-                                     self.atom_pair_sol_model, self.combined_model,
-                                     self.melting_point_model, w, h)
+        self.properties = Properties(self.models, w, h)
 
         self.create_toolbar()
         self.create_search_bar()
