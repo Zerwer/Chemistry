@@ -87,6 +87,11 @@ class AllProperties:
 
 
 class AllModels:
+    descriptors = {'logP': 'logP',
+                   'solubility': 'sol',
+                   'melting': 'mp',
+                   'pKa': 'pka'}
+
     def __init__(self, logP, logP_sol, atom_pair_sol,
                  combined_sol, melting_point, pKa):
         self.logP_model = LogP(logP)

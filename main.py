@@ -41,6 +41,7 @@ class MainWindow(QMainWindow):
                                         self.displayed_mols,
                                         self.displayed_smiles, self.mols_loaded)
         self.properties = Properties(self.models, w, h)
+        self.graphs = AllGraphs(self, self.models, self.mols)
 
         self.create_toolbar()
         self.create_search_bar()
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
         menu_bar = self.menuBar()
         menu_bar.setNativeMenuBar(True)
 
-        graphs = AllGraphs(self)
+
 
         file_menu = menu_bar.addMenu('File')
         view_menu = menu_bar.addMenu('View')
@@ -76,7 +77,7 @@ class MainWindow(QMainWindow):
 
         smiles_act.triggered.connect(self.smiles_action)
 
-        graph_menu.addActions(graphs.actions)
+        graph_menu.addActions(self.graphs.actions)
 
         file_menu.addAction(smiles_act)
         file_menu.addAction('Open...')
@@ -84,6 +85,7 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menu_bar)
 
     def mols_loaded(self):
+        self.graphs.mols = self.mols
         self.table.clear()
 
         if len(self.displayed_mols) == 0:
