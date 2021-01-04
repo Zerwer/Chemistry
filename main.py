@@ -2,7 +2,7 @@
 import sys
 from widgets.smiles import EnterSmiles
 from widgets.properties import Properties
-from widgets.graph import GraphOptions, AllGraphs
+from widgets.graph import AllGraphs
 from PyQt5.QtWidgets import *
 from math import floor
 from chemical_models import *
@@ -41,7 +41,6 @@ class MainWindow(QMainWindow):
                                         self.displayed_mols,
                                         self.displayed_smiles, self.mols_loaded)
         self.properties = Properties(self.models, w, h)
-        self.graph_options = GraphOptions()
 
         self.create_toolbar()
         self.create_search_bar()
@@ -130,12 +129,6 @@ class MainWindow(QMainWindow):
             self.smiles_entry.show()
         else:
             self.smiles_entry.hide()
-
-    def generate_graph(self):
-        if self.graph_options.isHidden():
-            self.graph_options.show()
-        else:
-            self.graph_options.hide()
 
 
 app = QApplication(sys.argv)

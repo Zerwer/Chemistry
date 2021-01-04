@@ -1,46 +1,7 @@
 from PyQt5.QtWidgets import *
 
 
-class Graph:
-    def __init__(self, window):
-        self.window = window
-        self.action = self.action()
-        pass
-
-    @property
-    def action(self):
-        raise NotImplementedError
-
-    @action.setter
-    def action(self, value):
-        self._action = value
-
-    def generate(self):
-        pass
-
-
-class Line(Graph):
-    def action(self):
-        act = QAction('Line', self.window)
-        act.setStatusTip('Line Graph')
-        return act
-
-    def __init__(self, window):
-        super().__init__(window)
-        pass
-
-
-class Scatter(Graph):
-    def action(self):
-        act = QAction('Scatter', self.window)
-        act.setStatusTip('Scatter Plot')
-        return act
-
-    def __init__(self, window):
-        super().__init__(window)
-        pass
-
-
+# Data structure to combine all graphs
 class AllGraphs:
     def __init__(self, window):
         self.line_graph = Line(window)
@@ -50,44 +11,94 @@ class AllGraphs:
                         self.scatter_graph.action]
 
 
-class GraphOptions(QWidget):
-    graph_types = ['line', 'scatter']
-    descriptors = ['logP', 'solubility', 'melting', 'pKa']
+# All graphs inherent this general functionality
+class Graph:
+    def __init__(self, window):
+        self.window = window
+        self.action = self.action()
+        self.widget = self.Widget(self.generate_graph)
 
-    def __init__(self):
-        super().__init__()
+    class Widget(QWidget):
+        descriptors = ['logP', 'solubility', 'melting', 'pKa']
 
-        self.setWindowTitle('Select Options for Graph')
+        def __init__(self, generate_graph):
+            super().__init__()
+            self.generate_graph = generate_graph
 
-        self.resize(300, 200)
+    @property
+    def action(self):
+        raise NotImplementedError
 
-        self.graph_name = QLineEdit()
-        self.graph_type = QComboBox()
-        self.x_label = QLineEdit()
-        self.x_descriptor = QComboBox()
-        self.y_label = QLineEdit()
-        self.y_descriptor = QComboBox()
-        self.enter = QPushButton()
-
-        self.graph_name.setPlaceholderText('Enter name of graph')
-        self.graph_type.addItems(self.graph_types)
-        self.x_label.setPlaceholderText('Enter X-axis label')
-        self.x_descriptor.addItems(self.descriptors)
-        self.y_label.setPlaceholderText('Enter Y-axis label')
-        self.y_descriptor.addItems(self.descriptors)
-        self.enter.setText('Generate')
-        self.enter.clicked.connect(self.generate_graph)
-
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
-        self.layout.addWidget(self.graph_name)
-        self.layout.addWidget(self.graph_type)
-        self.layout.addWidget(self.x_label)
-        self.layout.addWidget(self.x_descriptor)
-        self.layout.addWidget(self.y_label)
-        self.layout.addWidget(self.y_descriptor)
-        self.layout.addWidget(self.enter)
+    @action.setter
+    def action(self, value):
+        self._action = value
 
     def generate_graph(self):
         pass
+
+    def generate(self):
+        if self.widget.isHidden():
+            self.widget.show()
+        else:
+            self.widget.hide()
+
+
+class Line(Graph):
+    def __init__(self, window):
+        super().__init__(window)
+
+    def action(self):
+        act = QAction('Line', self.window)
+        act.setStatusTip('Line Graph')
+        act.triggered.connect(lambda: self.generate())
+        return act
+
+    class Widget(Graph.Widget):
+        def __init__(self, _):
+            super().__init__(_)
+            self.setWindowTitle('Select Options for Graph')
+
+            self.resize(300, 200)
+
+
+class Scatter(Graph):
+    def __init__(self, window):
+        super().__init__(window)
+
+    def action(self):
+        act = QAction('Scatter', self.window)
+        act.setStatusTip('Scatter Plot')
+        act.triggered.connect(lambda: self.generate())
+        return act
+
+    class Widget(Graph.Widget):
+        def __init__(self, _):
+            super().__init__(_)
+            self.setWindowTitle('Select Options for Graph')
+
+            self.resize(300, 200)
+
+            graph_name = QLineEdit()
+            x_label = QLineEdit()
+            x_descriptor = QComboBox()
+            y_label = QLineEdit()
+            y_descriptor = QComboBox()
+            enter = QPushButton()
+
+            graph_name.setPlaceholderText('Enter name of graph')
+            x_label.setPlaceholderText('Enter X-axis label')
+            x_descriptor.addItems(self.descriptors)
+            y_label.setPlaceholderText('Enter Y-axis label')
+            y_descriptor.addItems(self.descriptors)
+            enter.setText('Generate')
+            enter.clicked.connect(self.generate_graph)
+
+            layout = QVBoxLayout()
+            self.setLayout(layout)
+
+            layout.addWidget(graph_name)
+            layout.addWidget(x_label)
+            layout.addWidget(x_descriptor)
+            layout.addWidget(y_label)
+            layout.addWidget(y_descriptor)
+            layout.addWidget(enter)
