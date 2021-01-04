@@ -90,7 +90,8 @@ class AllModels:
     descriptors = {'logP': 'logP',
                    'solubility': 'sol',
                    'melting': 'mp',
-                   'pKa': 'pka'}
+                   'pKa': 'pka',
+                   'molecular weight': 'mol_wt'}
 
     def __init__(self, logP, logP_sol, atom_pair_sol,
                  combined_sol, melting_point, pKa):
@@ -101,18 +102,54 @@ class AllModels:
         self.melting_point_model = MeltingPoint(melting_point)
         self.pKa_model = GeneralPKa(pKa)
 
-    def predict(self, mol):
+    # Function predicts molecules descriptors from selected_descriptors
+    #   Since some descriptors have redundant calculations the list options
+    #   is used to avoid redundancy
+    def predict(self, mol, selected_descriptors):
+        options = [0, 0, 0, 0, 0]
+        return_properties = {}
+
+        for option in selected_descriptors:
+            if option == 'logP':
+                options[0] = 1
+            elif option == 'sol':
+                options[0] = 1
+                options[1] = 1
+            elif option == 'mp':
+                options[0] = 1
+                options[1] = 1
+                options[2] = 1
+            elif option == 'pka':
+                options[3] = 1
+            elif option == 'mol_wt':
+                options[4] = 1
+
         fp = rdMolDescriptors.GetHashedAtomPairFingerprintAsBitVect(mol)
-        avalon = GetAvalonFP(mol)
-        maacs = MACCSkeys.GenMACCSKeys(mol)
 
-        logP = self.logP_model.run(fp)
-        logP_sol = self.logP_solubility_model.run(logP)
-        atom_pair_sol = self.atom_pair_sol_model.run(fp)
-        combined_sol = self.combined_model.run(mol, logP,
-                                                      logP_sol, atom_pair_sol)
-        mg_ml_sol = logs_to_mg_ml(combined_sol, mol)
-        mp = self.melting_point_model.run(combined_sol, logP)
-        pka = self.pKa_model.run(avalon + maacs + fp)
+        if options[0]:
+            logP = self.logP_model.run(fp)
+            return_properties['logP'] = logP
 
-        return AllProperties(logP, mg_ml_sol, mp, pka)
+        if options[1]:
+            logP_sol = self.logP_solubility_model.run(logP)
+            atom_pair_sol = self.atom_pair_sol_model.run(fp)
+            combined_sol = self.combined_model.run(mol, logP,
+                                                   logP_sol, atom_pair_sol)
+            mg_ml_sol = logs_to_mg_ml(combined_sol, mol)
+            return_properties['sol'] = mg_ml_sol
+
+        if options[2]:
+            mp = self.melting_point_model.run(combined_sol, logP)
+            return_properties['mp'] = mp
+
+        if options[3]:
+            avalon = GetAvalonFP(mol)
+            maacs = MACCSkeys.GenMACCSKeys(mol)
+            pka = self.pKa_model.run(avalon + maacs + fp)
+            return_properties['pka'] = pka
+
+        if options[4]:
+            wt = rdMolDescriptors.CalcExactMolWt(mol)
+            return_properties['mol_wt'] = wt
+
+        return return_properties

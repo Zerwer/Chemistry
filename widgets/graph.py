@@ -86,11 +86,14 @@ class Scatter(Graph):
 
     def generate_graph(self, graph_name, x_label,
                        x_descriptor, y_label, y_descriptor):
+        x_abr_descriptor = self.models.descriptors[x_descriptor]
+        y_abr_descriptor = self.models.descriptors[y_descriptor]
         x, y = [], []
         for mol in self.mols:
-            properties = self.models.predict(mol)
-            x.append(properties.__dict__[self.models.descriptors[x_descriptor]])
-            y.append(properties.__dict__[self.models.descriptors[y_descriptor]])
+            properties = self.models.predict(mol, [x_abr_descriptor,
+                                                   y_abr_descriptor])
+            x.append(properties[x_abr_descriptor])
+            y.append(properties[y_abr_descriptor])
 
         fig = plt.figure()
         ax = fig.add_axes([0, 0, 1, 1])

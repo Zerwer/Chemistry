@@ -44,17 +44,18 @@ class Properties(QWidget):
             img = QImage(ImageQt(Draw.MolToImage(self.mol, size=(floor(self.w/2),
                                                                  floor(self.h/2)))))
 
-            predictions = self.models.predict(self.mol)
+            predictions = self.models.predict(self.mol, ['logP', 'sol',
+                                                         'mp', 'pka'])
 
             self.logP.show()
             self.solubility.show()
             self.melting.show()
             self.pKa.show()
 
-            self.logP.setText('LogP: ' + str(round(predictions.logP, 2)))
+            self.logP.setText('LogP: ' + str(round(predictions['logP'], 2)))
             self.solubility.setText('Water Solubility(mg/mL): ' +
-                                    str(round(predictions.sol, 2)))
-            self.melting.setText('Melting Point(C): ' + str(round(predictions.mp, 2)))
-            self.pKa.setText('pKa: ' + str(round(predictions.pka, 2)))
+                                    str(round(predictions['sol'], 2)))
+            self.melting.setText('Melting Point(C): ' + str(round(predictions['mp'], 2)))
+            self.pKa.setText('pKa: ' + str(round(predictions['pka'], 2)))
 
             self.mol_img.setPixmap(QPixmap(img))
