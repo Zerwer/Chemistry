@@ -2,7 +2,7 @@
 import sys
 from widgets.smiles import EnterSmiles
 from widgets.properties import Properties
-from widgets.graph import AllGraphs
+from widgets.graph import AllGraphs, DisplayGraph
 from PyQt5.QtWidgets import *
 from math import floor
 from chemical_models import *
@@ -11,6 +11,8 @@ w, h = 800, 600
 
 
 class MainWindow(QMainWindow):
+    graph = None
+
     def __init__(self):
         super().__init__()
 
@@ -64,8 +66,6 @@ class MainWindow(QMainWindow):
     def create_toolbar(self):
         menu_bar = self.menuBar()
         menu_bar.setNativeMenuBar(True)
-
-
 
         file_menu = menu_bar.addMenu('File')
         view_menu = menu_bar.addMenu('View')
@@ -122,6 +122,10 @@ class MainWindow(QMainWindow):
                 self.displayed_smiles.append(smile)
 
         self.mols_loaded()
+
+    def display_graph(self, title, img):
+        self.graph = DisplayGraph(title, img)
+        self.graph.show()
 
     def item_selected(self, row, _):
         self.properties.change_mol(self.displayed_mols[row])

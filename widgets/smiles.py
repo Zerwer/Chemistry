@@ -1,5 +1,6 @@
 # Widget that allows manual entry of SMILES strings
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
 from rdkit import Chem
 
 
@@ -8,6 +9,8 @@ class EnterSmiles(QWidget):
         super().__init__()
 
         self.setWindowTitle('Enter SMILES String')
+
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
         self.mols = mols
         self.smiles = smiles

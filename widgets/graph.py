@@ -1,5 +1,10 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
 import matplotlib.pyplot as plt
+import io
+import PIL
+from PIL.ImageQt import ImageQt
 
 
 # Data structure to combine all graphs
@@ -27,6 +32,7 @@ class Graph:
             super().__init__()
             self.generate_graph = generate_graph
             self.descriptors = descriptors
+            self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
         # Allows graph specific arguments to be passed down
         def _generate_graph(self):
@@ -48,6 +54,27 @@ class Graph:
             self.widget.show()
         else:
             self.widget.hide()
+
+
+class DisplayGraph(QWidget):
+    def __init__(self, title, img):
+        super().__init__()
+        self.setWindowTitle(title)
+
+        self.resize(700, 500)
+
+        self.graph = QLabel()
+        self.save = QPushButton()
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.graph.setPixmap(img)
+        self.save.setText('Save')
+
+        layout.addWidget(self.graph)
+        layout.addWidget(self.save)
+
 
 
 class Line(Graph):
@@ -95,15 +122,18 @@ class Scatter(Graph):
             x.append(properties[x_abr_descriptor])
             y.append(properties[y_abr_descriptor])
 
-        fig = plt.figure()
-        ax = fig.add_axes([0, 0, 1, 1])
-        ax.scatter(x, y, s=1)
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
-        ax.set_title(graph_name)
-        fig.savefig('graph.png')
-        plt.close(fig)
-        self.widget.hide()
+        plt.scatter(x, y, s=1)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(graph_name)
+
+        buf = io.BytesIO()
+        plt.savefig(buf)
+        plt.close()
+        buf.seek(0)
+        img = ImageQt(PIL.Image.open(buf))
+        self.widget.close()
+        self.window.display_graph(graph_name, QPixmap.fromImage(img))
 
     class Widget(Graph.Widget):
         def __init__(self, _, _d):
