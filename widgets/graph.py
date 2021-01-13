@@ -76,7 +76,6 @@ class DisplayGraph(QWidget):
         layout.addWidget(self.save)
 
 
-
 class Line(Graph):
     def __init__(self, _win, _mod, _mol):
         super().__init__(_win, _mod, _mol)
@@ -87,18 +86,69 @@ class Line(Graph):
         act.triggered.connect(lambda: self.generate())
         return act
 
-    def generate_graph(self):
-        pass
+    def generate_graph(self, graph_name, x_label,
+                       x_descriptor, y_label, y_descriptor):
+        x_abr_descriptor = self.models.descriptors[x_descriptor]
+        y_abr_descriptor = self.models.descriptors[y_descriptor]
+        x, y = [], []
+        for mol in self.mols:
+            properties = self.models.predict(mol, [x_abr_descriptor,
+                                                   y_abr_descriptor])
+            x.append(properties[x_abr_descriptor])
+            y.append(properties[y_abr_descriptor])
+
+        plt.plot(x, y)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(graph_name)
+
+        buf = io.BytesIO()
+        plt.savefig(buf)
+        plt.close()
+        buf.seek(0)
+        img = ImageQt(PIL.Image.open(buf))
+        self.widget.close()
+        self.window.display_graph(graph_name, QPixmap.fromImage(img))
 
     class Widget(Graph.Widget):
         def __init__(self, _, _d):
             super().__init__(_, _d)
-            self.setWindowTitle('Select Options for Graph')
+            self.setWindowTitle('Select Options for Line Graph')
 
             self.resize(300, 200)
 
+            self.graph_name = QLineEdit()
+            self.x_label = QLineEdit()
+            self.x_descriptor = QComboBox()
+            self.y_label = QLineEdit()
+            self.y_descriptor = QComboBox()
+            self.enter = QPushButton()
+
+            self.graph_name.setPlaceholderText('Enter name of graph')
+            self.x_label.setPlaceholderText('Enter X-axis label')
+            self.x_descriptor.addItems(self.descriptors)
+            self.y_label.setPlaceholderText('Enter Y-axis label')
+            self.y_descriptor.addItems(self.descriptors)
+            self.enter.setText('Generate')
+            self.enter.clicked.connect(self._generate_graph)
+
+            layout = QVBoxLayout()
+            self.setLayout(layout)
+
+            layout.addWidget(self.graph_name)
+            layout.addWidget(self.x_label)
+            layout.addWidget(self.x_descriptor)
+            layout.addWidget(self.y_label)
+            layout.addWidget(self.y_descriptor)
+            layout.addWidget(self.enter)
+
         def _generate_graph(self):
-            pass
+            kwargs = {'graph_name': self.graph_name.text(),
+                      'x_label': self.x_label.text(),
+                      'x_descriptor': str(self.x_descriptor.currentText()),
+                      'y_label': self.y_label.text(),
+                      'y_descriptor': str(self.y_descriptor.currentText())}
+            self.generate_graph(**kwargs)
 
 
 class Scatter(Graph):
@@ -138,7 +188,7 @@ class Scatter(Graph):
     class Widget(Graph.Widget):
         def __init__(self, _, _d):
             super().__init__(_, _d)
-            self.setWindowTitle('Select Options for Graph')
+            self.setWindowTitle('Select Options for Scatter Plot')
 
             self.resize(300, 200)
 
