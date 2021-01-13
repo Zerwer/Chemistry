@@ -1,5 +1,7 @@
 # Chemistry
-Neural networks for predicting chemical properties
+Neural networks for predicting chemical properties and UI for graphing predict properties of datasets.
+Developing generative adversarial network that learns to create molecules based on configured predicted properties 
+and other constants such as molecular weight.
 
 ## Conda Setup
 
@@ -8,7 +10,22 @@ conda create -n Chemistry
 conda activate Chemistry
 conda install -c rdkit rdkit
 conda install scikit-learn
+conda install matplotlib
 ```
+
+# Interactive UI
+Requires models to be compiled and saved.
+Molecules can be manually entered as SMILES strings or a file can be loaded.
+
+## Main Window 
+- Table containing all loaded molecules
+- Search bar to search through molecules
+- Property display window to show predicted properties of a selected molecule
+
+## Graph Generation
+Select graph type from View>Graph tab, a window to configure the graph then appears.
+
+# Property Prediction
 
 ## Octanol-Water Partition Coefficient (logP)
 Data: 24652 compounds scraped from PubChem
