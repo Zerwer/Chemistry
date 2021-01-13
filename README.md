@@ -21,9 +21,12 @@ Molecules can be manually entered as SMILES strings or a file can be loaded.
 - Table containing all loaded molecules
 - Search bar to search through molecules
 - Property display window to show predicted properties of a selected molecule
+![alt text](https://github.com/Zerwer/Chemistry/blob/master/ui_ex/ui0.png?raw=true)
 
 ## Graph Generation
 Select graph type from View>Graph tab, a window to configure the graph then appears.
+![alt text](https://github.com/Zerwer/Chemistry/blob/master/ui_ex/ui1.png?raw=true)
+![alt text](https://github.com/Zerwer/Chemistry/blob/master/ui_ex/ui2.png?raw=true)
 
 # Property Prediction
 
